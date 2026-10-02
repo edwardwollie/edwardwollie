@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.sites-runtime
+.wrangler
+.env
+.env.*
+*.zip
+npm-debug.log*

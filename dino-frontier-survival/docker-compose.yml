@@ -1,0 +1,25 @@
+services:
+  dino-frontier-survival:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dino-frontier-survival:1.0.1
+    container_name: dino-frontier-survival
+    restart: unless-stopped
+    ports:
+      - "${DINO_FRONTIER_PORT:-8101}:3000"
+    environment:
+      NODE_ENV: production
+      WRANGLER_LOG_PATH: /tmp/wrangler.log
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+      - /game/.wrangler:rw,noexec,nosuid,size=16m
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/healthz | grep -q dino-frontier-ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
