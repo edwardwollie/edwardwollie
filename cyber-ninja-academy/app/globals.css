@@ -110,3 +110,4 @@
 @media (pointer:coarse),(max-width:760px){.boss-bar{top:150px;width:62vw}.ghost-tag{top:auto;bottom:160px}.wallrun-tag{bottom:200px}}
 .obj-marker.boss i{border-color:#ff304f;box-shadow:0 0 18px #ff304f;width:24px;height:24px}
 .blip.boss{width:14px;height:14px;background:#ff304f;box-shadow:0 0 12px #ff304f;animation:pulse-low .4s infinite alternate}
+.hangar-note{color:#5f839a;font-size:8px;font-weight:900;letter-spacing:.1em}

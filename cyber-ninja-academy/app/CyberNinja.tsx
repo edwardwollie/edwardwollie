@@ -37,6 +37,9 @@ const opsLessons=[
   {i:"◉",t:"FIGHTING THE WARDEN",p:"Dodge cannon fans, step out of red plasma-rain circles and JUMP over the orange shockwave ring. Land six quick hits to stagger it: it sinks low and takes 50% more damage. Deflected bolts hit it hard."},
 ];
 
+/** The 3D blueprint hangar is an internal tool: only local development builds show it. */
+const HANGAR_ENABLED=process.env.NODE_ENV!=="production";
+
 function fmt(t:number){const m=Math.floor(t/60),s=Math.floor(t%60);return `${m}:${String(s).padStart(2,"0")}`}
 
 /** Virtual analog stick for touch screens. */
@@ -78,7 +81,7 @@ export default function CyberNinja(){
   const music=save.music;
   useEffect(()=>{if(screen!=="play"||!canvas.current)return;const g=new NinjaEngine(canvas.current,mission,save.upgrades,{onHud:setHud,onMessage:msg,onComplete:done,onFail:fail},{music});engine.current=g;return()=>{g.destroy();engine.current=null}},[screen,mission,save.upgrades,msg,done,fail]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(()=>{if(screen!=="ops"||!canvas.current)return;setOhud(null);const g=new OpenWorldEngine(canvas.current,op,save.upgrades,{onHud:setOhud,onMessage:msg,onComplete:opsDone,onFail:opsFail},{music,ghost:save.showGhost?loadGhost(op.id):null});ops.current=g;return()=>{g.destroy();ops.current=null}},[screen,op,save.upgrades,msg,opsDone,opsFail]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(()=>{if(screen!=="hangar"||!canvas.current)return;const v=new HangarViewer(canvas.current);hangar.current=v;setPose("stance");setWire(false);return()=>{v.destroy();hangar.current=null}},[screen]);
+  useEffect(()=>{if(!HANGAR_ENABLED||screen!=="hangar"||!canvas.current)return;const v=new HangarViewer(canvas.current);hangar.current=v;setPose("stance");setWire(false);return()=>{v.destroy();hangar.current=null}},[screen]);
   useEffect(()=>{if(loaded)setCallsign(save.callsign)},[loaded]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(()=>{
     if(screen!=="academy"||mode!=="ops")return;let live=true;setTop(null);
@@ -116,7 +119,7 @@ export default function CyberNinja(){
 
   return <main className={`shell ${screen}`}>
     {screen==="academy"&&<>
-      <header><div className="brand"><i>刃</i><span><b>CYBER NINJA</b><small>{"ACADEMY // FULL 3D 4.1"}</small></span></div><div className="head-actions"><button className="ghost" onClick={toggleMusic}>{save.music?"♪ ON":"♪ OFF"}</button><button className="ghost" onClick={()=>setScreen("hangar")}>3D BLUEPRINT HANGAR</button><div className="credits">◇ {save.credits}</div></div></header>
+      <header><div className="brand"><i>刃</i><span><b>CYBER NINJA</b><small>{"ACADEMY // FULL 3D 4.1"}</small></span></div><div className="head-actions"><button className="ghost" onClick={toggleMusic}>{save.music?"♪ ON":"♪ OFF"}</button>{HANGAR_ENABLED&&<button className="ghost" onClick={()=>setScreen("hangar")}>3D BLUEPRINT HANGAR</button>}<div className="credits">◇ {save.credits}</div></div></header>
       <section className="hero">
         <div className="hero-copy"><small>SHADOW NETWORK // FULL 3D OPERATIONS ONLINE</small><h1>ROAM.<br/><em>STRIKE.</em><br/>ASCEND.</h1><p>Free-roam a neon rooftop city in full 3D. Sprint, wall-run, double-jump and chain katana strikes against hunter drones, then take down the Warden and race your own ghost up the leaderboard. Or take on the 12 classic survival trials, rebuilt with the new realistic operative.</p><div className="hero-actions"><button className="primary" onClick={start}>{mode==="ops"?"DEPLOY TO CITY OPS →":"ENTER SURVIVAL TRIAL →"}</button><span><b>{SECTORS.length}</b> sectors + Warden bosses · <b>12</b> survival trials</span></div></div>
         <div className="ninja-sigil" aria-hidden="true"><i className="sigil-ring r1"/><i className="sigil-ring r2"/><i className="sigil-slash s1"/><i className="sigil-slash s2"/><strong>刃</strong><small>PHOTON<br/>EDGE</small></div>
@@ -166,11 +169,11 @@ export default function CyberNinja(){
       <div className="touch-ops"><Stick onMove={(x,y)=>ops.current?.setMove(x,y)}/>
         <div className="ops-buttons"><button className="o-star" onPointerDown={()=>ops.current?.throwStar()}>✴<small>STAR</small></button><button className="o-dash" onPointerDown={()=>ops.current?.dash()}>»<small>DASH</small></button><button className="o-strike" onPointerDown={()=>ops.current?.attack()}>⚔<small>STRIKE</small></button><button className="o-jump" onPointerDown={()=>ops.current?.jump()}>↑<small>JUMP</small></button></div></div>
       {toast&&<div className={`toast ${toast.kind}`} key={toast.k}>{toast.text}</div>}<button className="music-toggle" onClick={toggleMusic}>{save.music?"♪":"♪̸"}</button><button className="exit" onClick={()=>setScreen("academy")}>×</button></div>}
-    {screen==="hangar"&&<div className="game hangar"><canvas ref={canvas}/>
+    {HANGAR_ENABLED&&screen==="hangar"&&<div className="game hangar"><canvas ref={canvas}/>
       <div className="hangar-panel"><small>{"3D BLUEPRINT HANGAR // SPEC 4.1.0"}</small><h2>CYBER NINJA OPERATIVE</h2><p>The exact playable model: 1.92 m, 16 articulated joints, conformal armour over a lofted carbon under-suit. Drag to orbit, scroll or pinch to zoom.</p>
         <div className="hangar-group"><small>SIDES</small>{["front","rear","left","right","top","under","quarter"].map(v=><button key={v} onClick={()=>hangar.current?.setView(v as any)}>{v.toUpperCase()}</button>)}</div>
         <div className="hangar-group"><small>POSES</small>{["stance","run","jump","slide","strike","finisher","dash","wallrun"].map(p=><button key={p} className={pose===p?"on":""} onClick={()=>{setPose(p);hangar.current?.setPose(p)}}>{p.toUpperCase()}</button>)}</div>
-        <div className="hangar-group"><button className={wire?"on":""} onClick={()=>setWire(hangar.current?.toggleBlueprint()??false)}>{wire?"SOLID VIEW":"BLUEPRINT WIREFRAME"}</button><a href="/blueprints/Cyber-Ninja-3D-Blueprint-Atlas-v4.1.0.pdf" target="_blank" rel="noreferrer">DOWNLOAD BLUEPRINT ATLAS (PDF)</a></div>
+        <div className="hangar-group"><button className={wire?"on":""} onClick={()=>setWire(hangar.current?.toggleBlueprint()??false)}>{wire?"SOLID VIEW":"BLUEPRINT WIREFRAME"}</button><span className="hangar-note">ATLAS: blueprints/ folder in the source package</span></div>
       </div><button className="exit" onClick={()=>setScreen("academy")}>×</button></div>}
     {screen==="complete"&&<div className="overlay"><div className="modal result"><small>FINISH GATE REACHED</small><i className="lesson-icon">✦</i><h2>RUN SURVIVED</h2><div className="result-grid"><span>WAVES SURVIVED<b>{result?.gates}/{mission.hazards}</b></span><span>CLEAN WAVES<b>{result?.clean}</b></span><span>INTEGRITY<b>{result?.health}%</b></span></div><p>{result?.hits} impacts · {result?.stars} star{result?.stars===1?"":"s"} · Optional: {result?.shards}/{mission.shards} shards and {result?.drones}/{mission.drones} drones (+◇ {result?.bonusCredits}).</p><button className="primary" onClick={claim}>CLAIM ◇ {result?.credits}</button></div></div>}
     {screen==="failed"&&<div className="overlay"><div className="modal result"><small>INTEGRITY DEPLETED</small><i className="lesson-icon fail">!</i><h2>RECALIBRATE</h2><p>Reach the finish alive. Jump red barriers and spikes, slide beneath magenta gates and sweeps, and shift away from orange walls and crushers. Shards and drones are optional.</p><button className="primary" onClick={()=>setScreen("academy")}>RETURN TO ACADEMY</button></div></div>}

@@ -34,3 +34,12 @@ test("serves the production health endpoint", async () => {
   assert.equal(response.status, 200);
   assert.equal((await response.text()).trim(), "cyber-ninja-ok");
 });
+
+test("production build hides the 3D blueprint hangar and its PDF", async () => {
+  const fs = await import("node:fs");
+  const dir = new URL("../dist/client/assets/", import.meta.url);
+  const bundle = fs.readdirSync(dir).filter((f) => f.endsWith(".js")).map((f) => fs.readFileSync(new URL(f, dir), "utf8")).join("\n");
+  assert.doesNotMatch(bundle, /3D BLUEPRINT HANGAR/);
+  assert.doesNotMatch(bundle, /Blueprint-Atlas/);
+  assert.equal(fs.existsSync(new URL("../public/blueprints/", import.meta.url)), false);
+});

@@ -30,6 +30,6 @@ python3 blueprints/design_model.py
 node blueprints/extract_runtime.mjs
 python3 blueprints/render_blueprints.py
 python3 blueprints/export_glb.py
-python3 blueprints/make_atlas_pdf.py && cp blueprints/Cyber-Ninja-3D-Blueprint-Atlas-v*.pdf public/blueprints/
+python3 blueprints/make_atlas_pdf.py
 npm test
 ```
