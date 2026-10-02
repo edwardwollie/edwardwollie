@@ -11,6 +11,8 @@ services:
     environment:
       NODE_ENV: production
       WRANGLER_LOG_PATH: /tmp/wrangler.log
+      # Private key for the 3D blueprint archive (/blueprints?key=...). Unset = archive hidden for everyone.
+      BLUEPRINTS_KEY: ${BLUEPRINTS_KEY:-}
     read_only: true
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]

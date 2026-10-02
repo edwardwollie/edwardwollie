@@ -2,7 +2,8 @@
 
 Track. Defend. Evolve. A third-person 3D dinosaur survival shooter built with Babylon.js on vinext, served at
 `frontier.flexzonicgames.com`. Every ranger, dinosaur, structure and prop is generated from measured
-[3D blueprints](docs/BLUEPRINTS.md), and the game ships its own interactive blueprint archive at `/blueprints`.
+[3D blueprints](docs/BLUEPRINTS.md), and the game ships its own interactive blueprint archive at `/blueprints` — private, opened with
+`?key=<BLUEPRINTS_KEY>` (see [INSTALL.md](INSTALL.md)).
 
 ![Solar Grasslands — third-person combat](docs/screenshots/solar-grasslands.png)
 
@@ -60,7 +61,7 @@ Track. Defend. Evolve. A third-person 3D dinosaur survival shooter built with Ba
 | `app/world.ts` | Biomes, terrain, sky, mountains, props, fence, outpost, weather |
 | `app/audio.ts` | Procedural sound effects and ambient score |
 | `app/DinoFrontier.tsx` | Command base, training, HUD, pause/settings, touch controls, field guide |
-| `app/blueprints/` | `/blueprints` archive (orthographic sheets + perspective view) |
+| `app/blueprints/` | Private `/blueprints` archive (orthographic sheets + perspective view), gated in `worker/index.ts` |
 | `docs/BLUEPRINTS.md` | Blueprint reference with rendered sheets |
 
 ## Develop

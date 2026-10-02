@@ -96,7 +96,6 @@ export default function DinoFrontier() {
       <header>
         <div className="brand"><i>DF</i><span><b>DINO FRONTIER</b><small>SURVIVAL COMMAND</small></span></div>
         <nav>
-          <a className="navlink" href="/blueprints">BLUEPRINTS</a>
           <button onClick={() => setScreen("fieldguide")}>FIELD GUIDE</button>
           <button onClick={() => setShowSettings(true)}>SETTINGS</button>
           <strong>◇ {save.credits}</strong>
@@ -218,7 +217,6 @@ export default function DinoFrontier() {
               <small>DISCOVERED</small><h2>{guideSpecies.name}</h2><p>{guideSpecies.detail}</p>
               <dl><div><dt>HEALTH</dt><dd>{STATS[guideSpecies.key].hp}</dd></div><div><dt>SPEED</dt><dd>{STATS[guideSpecies.key].speed} m/s</dd></div><div><dt>BITE</dt><dd>{STATS[guideSpecies.key].damage}</dd></div></dl>
               <h3>FIELD TACTICS</h3><p className="tactic">{guideSpecies.behavior}</p>
-              <a href={`/blueprints?model=${guideSpecies.key}`}>OPEN 3D BLUEPRINT →</a>
             </div>
           </div> : <div className="specimen locked"><p>Secure more frontier sectors to identify this lifeform.</p></div>}
         </div>

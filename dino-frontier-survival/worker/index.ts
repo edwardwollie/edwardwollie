@@ -25,9 +25,22 @@ interface ExecutionContext {
 // dangerouslyAllowSVG: true in next.config.js and uncomment below:
 // const imageConfig: ImageConfig = { dangerouslyAllowSVG: true };
 
+/**
+ * The blueprint archive is private. It is served only for /blueprints?key=<BLUEPRINTS_KEY>;
+ * without a configured key, or with a wrong one, it looks like any missing page.
+ */
+function blueprintsAllowed(url: URL): boolean {
+  const expected = typeof process !== "undefined" ? process.env.BLUEPRINTS_KEY : undefined;
+  return !!expected && url.searchParams.get("key") === expected;
+}
+
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+
+    if ((url.pathname === "/blueprints" || url.pathname.startsWith("/blueprints/") || url.pathname.startsWith("/blueprints.")) && !blueprintsAllowed(url)) {
+      return new Response("Not found", { status: 404, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store", "x-robots-tag": "noindex" } });
+    }
 
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];

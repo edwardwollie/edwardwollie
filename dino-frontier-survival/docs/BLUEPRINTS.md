@@ -7,7 +7,8 @@ three things, so the drawings can never drift from what ships:
 1. **The game** — [`app/model-builder.ts`](../app/model-builder.ts) turns a blueprint into a rigged Babylon.js
    model (parts merged per bone and material to keep draw calls low). The engine animates the bones procedurally
    (walk cycles, tail sway, jaw, frill flare, recoil) and fires from the sockets (`muzzle`, `mouth`).
-2. **The blueprint archive** — open **`/blueprints`** on the running site. Each sheet renders six true-scale
+2. **The blueprint archive** — open **`/blueprints?key=<BLUEPRINTS_KEY>`** on the running site (private; it
+   returns 404 without the key — see INSTALL.md). Each sheet renders six true-scale
    orthographic elevations (front, rear, left, right, plan, underside) at one shared scale, a perspective view you
    can orbit, measured overall dimensions, the rig overlay, material palette and design notes. Switch between
    *Blueprint*, *X-ray* and *Shaded* modes, toggle the rig, or print the sheet.
@@ -55,7 +56,7 @@ Dimensions are measured from the built meshes by the blueprint viewer.
 | --- | --- |
 | ![Frontier Ranger blueprint](blueprints/ranger-blueprint.png) | ![Frontier Ranger shaded](blueprints/ranger-shaded.png) |
 
-Live: `/blueprints?model=ranger`
+Live: `/blueprints?key=…&model=ranger`
 
 ### DF-BP-02
 
@@ -69,7 +70,7 @@ Live: `/blueprints?model=ranger`
 | --- | --- |
 | ![Pulse Drone blueprint](blueprints/drone-blueprint.png) | ![Pulse Drone shaded](blueprints/drone-shaded.png) |
 
-Live: `/blueprints?model=drone`
+Live: `/blueprints?key=…&model=drone`
 
 ### DF-BP-03
 
@@ -83,7 +84,7 @@ Live: `/blueprints?model=drone`
 | --- | --- |
 | ![Feathered Raptor blueprint](blueprints/raptor-blueprint.png) | ![Feathered Raptor shaded](blueprints/raptor-shaded.png) |
 
-Live: `/blueprints?model=raptor`
+Live: `/blueprints?key=…&model=raptor`
 
 ### DF-BP-04
 
@@ -97,7 +98,7 @@ Live: `/blueprints?model=raptor`
 | --- | --- |
 | ![Venom Spitter blueprint](blueprints/spitter-blueprint.png) | ![Venom Spitter shaded](blueprints/spitter-shaded.png) |
 
-Live: `/blueprints?model=spitter`
+Live: `/blueprints?key=…&model=spitter`
 
 ### DF-BP-05
 
@@ -111,7 +112,7 @@ Live: `/blueprints?model=spitter`
 | --- | --- |
 | ![Ironhide Anky blueprint](blueprints/anky-blueprint.png) | ![Ironhide Anky shaded](blueprints/anky-shaded.png) |
 
-Live: `/blueprints?model=anky`
+Live: `/blueprints?key=…&model=anky`
 
 ### DF-BP-06
 
@@ -125,7 +126,7 @@ Live: `/blueprints?model=anky`
 | --- | --- |
 | ![Storm Triceratops blueprint](blueprints/trike-blueprint.png) | ![Storm Triceratops shaded](blueprints/trike-shaded.png) |
 
-Live: `/blueprints?model=trike`
+Live: `/blueprints?key=…&model=trike`
 
 ### DF-BP-07
 
@@ -139,7 +140,7 @@ Live: `/blueprints?model=trike`
 | --- | --- |
 | ![Crimson Tyrant blueprint](blueprints/rex-blueprint.png) | ![Crimson Tyrant shaded](blueprints/rex-shaded.png) |
 
-Live: `/blueprints?model=rex`
+Live: `/blueprints?key=…&model=rex`
 
 ### DF-BP-08
 
@@ -153,7 +154,7 @@ Live: `/blueprints?model=rex`
 | --- | --- |
 | ![Frontier Outpost blueprint](blueprints/outpost-blueprint.png) | ![Frontier Outpost shaded](blueprints/outpost-shaded.png) |
 
-Live: `/blueprints?model=outpost`
+Live: `/blueprints?key=…&model=outpost`
 
 ### DF-BP-09
 
@@ -167,7 +168,7 @@ Live: `/blueprints?model=outpost`
 | --- | --- |
 | ![Fern Palm blueprint](blueprints/fern-blueprint.png) | ![Fern Palm shaded](blueprints/fern-shaded.png) |
 
-Live: `/blueprints?model=fern`
+Live: `/blueprints?key=…&model=fern`
 
 ### DF-BP-10
 
@@ -181,7 +182,7 @@ Live: `/blueprints?model=fern`
 | --- | --- |
 | ![Energy Crystal blueprint](blueprints/crystal-blueprint.png) | ![Energy Crystal shaded](blueprints/crystal-shaded.png) |
 
-Live: `/blueprints?model=crystal`
+Live: `/blueprints?key=…&model=crystal`
 ## Changing a blueprint
 
 1. Edit the generator for the model in `app/blueprints.ts` (`raptor()`, `trike()`, `ranger()` …). Body proportions
@@ -189,4 +190,4 @@ Live: `/blueprints?model=crystal`
 2. Run `node --experimental-strip-types --test tests/blueprints.test.mjs`. It checks the rig (no orphan bones,
    mirrored pairs, required animation bones and sockets), that creatures stand on the ground, and the size order
    of the species.
-3. Open `/blueprints?model=<key>` to inspect the six elevations before deploying.
+3. Open `/blueprints?key=<BLUEPRINTS_KEY>&model=<model>` to inspect the six elevations before deploying.

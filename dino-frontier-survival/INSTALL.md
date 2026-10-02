@@ -29,10 +29,25 @@ curl https://frontier.flexzonicgames.com/healthz
 curl https://frontier.flexzonicgames.com/.well-known/flexzonic-game.json
 ```
 
-Check the new 3D blueprint archive as well:
+## Private 3D blueprint archive
+
+The blueprint archive (`/blueprints`) is hidden from the public: it has no menu link, search engines are told not
+to index it, and it answers "Not found" unless the request carries your private key. To view it yourself, put a
+key in a `.env` file next to `docker-compose.yml` and redeploy:
 
 ```bash
-curl -I https://frontier.flexzonicgames.com/blueprints
+cd /opt/dino-frontier-survival
+echo "BLUEPRINTS_KEY=$(openssl rand -hex 16)" > .env
+chmod 600 .env
+./deploy.sh
+cat .env    # copy the key
+```
+
+Then open `https://frontier.flexzonicgames.com/blueprints?key=<your key>`. Without a `.env` key the archive is
+closed to everyone, including you. Check that the public sees nothing:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" https://frontier.flexzonicgames.com/blueprints   # expect 404
 ```
 
 ## Upgrading from 1.0.1
