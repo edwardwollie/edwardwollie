@@ -1,6 +1,6 @@
 # Neon Sports Arena — Full 3D 2.0
 
-A futuristic 3D sports game for the Flexzonic Games portal, built with Babylon.js. Four sports, six themed stadiums, thirty matches, six teams and four upgrade modules. Version 2.0 rebuilds the game in full 3D from a set of blueprints (series NS-02): one geometry recipe produces the playable meshes, the printed plates and the GLB models.
+A futuristic 3D sports game for the Flexzonic Games portal, built with Babylon.js. Four sports, six themed stadiums, thirty matches, six teams and four upgrade modules. Version 2.0 rebuilds the game in full 3D from a set of blueprints (series NS-02): one geometry recipe produces the playable meshes, the printed plates and the GLB models. The blueprints are private design files in `blueprints/`; they are not published on the website.
 
 ## Gameplay
 
@@ -11,7 +11,6 @@ A futuristic 3D sports game for the Flexzonic Games portal, built with Babylon.j
 - **Presentation:** an intro flyover, a kickoff countdown, slow-motion goal celebrations with an **instant replay**, live jumbotron scores, thousands of cheering fans, floodlights and fireworks. The audio is procedural: crowd noise that follows the attack, whistle, horn and an optional soundtrack.
 - **Cameras:** chase, broadcast and tactical (press V). You can also orbit the view with the middle mouse button, the gamepad's right stick or a drag on a phone.
 - **Six venues:** Prism Training Deck, Solar City Stadium, Aurora Skycourt, Quantum Harbor, Titan Pulse Dome and the Infinity Championship. Each has its own sky, stands, crowd and set dressing.
-- **3D Blueprint Hangar:** orbit any blueprinted asset in your team kit. You can snap to the six sides or a quarter view, preview 12 poses, toggle a wireframe, browse the 11 plates and download the PDF atlas and GLB models.
 - **Progress:** credits, upgrades, stars, wins, goals, assists, perfect releases and dunks are saved in the browser. 1.x saves carry over.
 
 ## Controls

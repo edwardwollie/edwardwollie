@@ -92,14 +92,7 @@ The Cloudflare Tunnel needs no changes: hostname `sports.flexzonicgames.com`, se
 3. Press **ENTER MATCH**. Returning players get the new six-step tutorial once. You should see a camera flyover of a 3D stadium, then **READY / GO**.
 4. On a computer, skate with WASD and hold Space to charge. Release in the lime band for **PERFECT RELEASE**. A goal plays a slow-motion celebration and an instant replay (tap or press any key to skip).
 5. On a phone (landscape), use the left stick, the ACTION button (hold to charge) and the five other buttons.
-6. Press **3D BLUEPRINTS** in the header. You should be able to:
-   - orbit the athlete
-   - switch sides and poses
-   - change assets
-   - toggle the wireframe
-   - open a plate
-   - download the PDF atlas
-7. Check the portal card at `https://www.flexzonicgames.com`. Its manifest should report `2.0.0` once discovery refreshes.
+6. Check the portal card at `https://www.flexzonicgames.com`. Its manifest should report `2.0.0` once discovery refreshes.
 
 Saved progress (credits, upgrades, stars, unlocked matches and teams) carries over because the save key `neon-sports-arena-save-v1` is unchanged.
 
@@ -120,4 +113,4 @@ If the automatic rollback already ran, the old folder is already back. Don't rep
 
 ## Blueprint files
 
-`blueprints/Neon-Sports-Arena-3D-Blueprint-Atlas-v2.0.0.pdf` contains the 11 plates; the game also serves it under `/blueprints/`. The PNG plates are in `blueprints/renders/` and the GLB models in `blueprints/models/`. To regenerate everything, see `blueprints/README.md`.
+The blueprints are private and are not part of the website. They stay in the source folder only: `blueprints/Neon-Sports-Arena-3D-Blueprint-Atlas-v2.0.0.pdf`, the PNG plates in `blueprints/renders/` and the GLB models in `blueprints/models/`. A request for `https://sports.flexzonicgames.com/blueprints/...` returns "not found".

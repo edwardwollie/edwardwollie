@@ -18,7 +18,7 @@
 - `render_blueprints.py` renders the 11 plates: orthographic, depth-buffered, 2× supersampled, with a glass/net transparency pass and contour lines.
 - `export_glb.py` writes 10 GLBs, mirroring X into glTF's right-handed frame.
 - `make_atlas_pdf.py` assembles the PDF.
-- `publish_assets.py` copies the PDF, GLBs and plate previews to `public/blueprints/` for the in-game hangar.
+- These outputs are private. Nothing in `blueprints/` is copied to `public/`, and a contract test fails if anything is.
 
 ## Orientation and units
 - Metres, +Y up, every asset faces +Z, and the athlete's right hand is +X. Views are front (+Z), rear (−Z), left (−X), right (+X), top (+Y) and underside (−Y). Quarter views are at 45° azimuth.
@@ -28,6 +28,6 @@
 
 ```bash
 pip install numpy scipy pillow reportlab
-npm run blueprints   # design → extract → render → GLB → PDF → publish
+npm run blueprints   # design → extract → render → GLB → PDF
 npm test
 ```

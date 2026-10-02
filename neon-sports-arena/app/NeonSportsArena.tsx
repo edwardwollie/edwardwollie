@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,react-hooks/set-state-in-effect,@next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any,react-hooks/set-state-in-effect */
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ArenaEngine, CameraMode, EngineSettings } from "./arena-engine";
 import { MISSIONS, MODE_INFO, TEAMS, UPGRADES, type SportMode, type UpgradeKey } from "./arena-data";
-import type { HangarViewer } from "./hangar";
 
 const VERSION = "2.0.0";
 
@@ -68,26 +67,16 @@ function rivalTeamFor(team: number, missionId: number) {
   return index;
 }
 
-const GLB: Partial<Record<string, string>> = {
-  athlete: "Neon-Athlete", energy_ball: "Energy-Ball", gravity_orb: "Gravity-Orb", power_core: "Power-Core", goal_frame: "Goal-Frame",
-  keeper_drone: "Keeper-Drone", hoop_rig: "Gravity-Hoop-Rig", capture_zone: "Capture-Zone", trophy: "Infinity-Cup", stand_section: "Stand-Section",
-};
-const PLATES = [
-  "01-athlete-six-views", "02-athlete-quarter-views", "03-athlete-detail", "04-articulation-pose-sheet", "05-team-kits", "06-sport-equipment",
-  "07-scoring-structures", "08-venue-plan-elevations", "09-sport-configurations", "10-venue-modules", "11-arena-circuit",
-];
 
 export default function NeonSportsArena() {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const hangarCanvas = useRef<HTMLCanvasElement>(null);
   const radar = useRef<HTMLCanvasElement>(null);
   const gameRoot = useRef<HTMLElement>(null);
   const engine = useRef<ArenaEngine | null>(null);
-  const hangar = useRef<HangarViewer | null>(null);
   const [save, setSave] = useState<Save>(fresh);
   const [loaded, setLoaded] = useState(false);
   const [selected, setSelected] = useState(0);
-  const [screen, setScreen] = useState<"arena" | "tutorial" | "play" | "complete" | "failed" | "records" | "hangar">("arena");
+  const [screen, setScreen] = useState<"arena" | "tutorial" | "play" | "complete" | "failed" | "records">("arena");
   const [step, setStep] = useState(0);
   const [hud, setHud] = useState<any>({ score: 0, rival: 0, target: 3, rivalTarget: 2, time: 120, shield: 100, energy: 55, combo: 0, boost: 0, tackle: 0, overdrive: 0, possession: false, phase: "intro" });
   const [toast, setToast] = useState<any>(null);
@@ -95,11 +84,6 @@ export default function NeonSportsArena() {
   const [ready, setReady] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [matchKey, setMatchKey] = useState(0);
-  const [hangarAsset, setHangarAsset] = useState("athlete");
-  const [hangarPose, setHangarPose] = useState("stance");
-  const [wire, setWire] = useState(false);
-  const [plate, setPlate] = useState<string | null>(null);
-  const [hangarMods, setHangarMods] = useState<any>(null);
   const toastTimer = useRef<number | null>(null);
   const mission = MISSIONS[selected];
   const mode = MODE_INFO[mission.mode];
@@ -158,21 +142,6 @@ export default function NeonSportsArena() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen, matchKey]);
 
-  useEffect(() => {
-    if (screen !== "hangar" || !hangarCanvas.current) return;
-    let cancelled = false;
-    let viewer: HangarViewer | null = null;
-    void import("./hangar").then((mod) => {
-      if (cancelled || !hangarCanvas.current) return;
-      viewer = new mod.HangarViewer(hangarCanvas.current, team);
-      hangar.current = viewer;
-      setHangarMods({ assets: mod.HANGAR_ASSETS, poses: mod.HANGAR_POSES });
-    });
-    return () => { cancelled = true; viewer?.destroy(); if (hangar.current === viewer) hangar.current = null; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen]);
-
-  useEffect(() => { hangar.current?.setTeam(team); }, [team]);
 
   const startMatch = () => { setMatchKey((k) => k + 1); setHud((h: any) => ({ ...h, phase: "intro", score: 0, rival: 0, time: mission.time })); setScreen("play"); };
   const launch = () => {
@@ -252,8 +221,8 @@ export default function NeonSportsArena() {
 
   return <main className={`sports ${screen}`}>
     {screen === "arena" && <>
-      <header><div className="brand"><i>NS</i><span><b>NEON SPORTS</b><small>ARENA LEAGUE · FULL 3D {VERSION.slice(0, 3)}</small></span></div><nav><button onClick={() => setScreen("hangar")}>3D BLUEPRINTS</button><button onClick={() => setScreen("records")}>RECORDS</button><button onClick={() => setShowSettings(true)}>SETTINGS</button><strong>⬡ {save.credits}</strong></nav></header>
-      <section className="sports-hero"><div><small>FLEXZONIC ARENA NETWORK // SEASON ONLINE</small><h1>COMPETE.<br/><em>UPGRADE.</em><br/>DOMINATE.</h1><p>Four futuristic sports in fully 3D stadiums. Skate with your squad, charge perfect shots past keeper drones, slam dunk off launch pads and climb from the rookie deck to the Infinity Championship.</p><div className="hero-actions"><button className="primary" onClick={launch}>ENTER MATCH {mission.id} →</button><button className="ghost" onClick={() => setScreen("hangar")}>VIEW 3D BLUEPRINTS</button></div></div><article className="match-card" style={{ "--mission": mission.color } as React.CSSProperties}><small>NEXT EVENT</small><b>{String(mission.id).padStart(2, "0")}</b><i>{mode.icon}</i><h2>{mission.name}</h2><span>{mode.name} · {mission.arena}</span><p>FIRST TO {mission.target} · {squad} VS {mission.bots} · {formatTime(mission.time)}{mission.keeper ? " · KEEPER DRONES" : ""}</p><div className="versus"><span style={{ color: team.color }}>{team.name}</span><em>VS</em><span style={{ color: rivalTeam.color }}>{rivalTeam.name}</span></div></article></section>
+      <header><div className="brand"><i>NS</i><span><b>NEON SPORTS</b><small>ARENA LEAGUE · FULL 3D {VERSION.slice(0, 3)}</small></span></div><nav><button onClick={() => setScreen("records")}>RECORDS</button><button onClick={() => setShowSettings(true)}>SETTINGS</button><strong>⬡ {save.credits}</strong></nav></header>
+      <section className="sports-hero"><div><small>FLEXZONIC ARENA NETWORK // SEASON ONLINE</small><h1>COMPETE.<br/><em>UPGRADE.</em><br/>DOMINATE.</h1><p>Four futuristic sports in fully 3D stadiums. Skate with your squad, charge perfect shots past keeper drones, slam dunk off launch pads and climb from the rookie deck to the Infinity Championship.</p><div className="hero-actions"><button className="primary" onClick={launch}>ENTER MATCH {mission.id} →</button></div></div><article className="match-card" style={{ "--mission": mission.color } as React.CSSProperties}><small>NEXT EVENT</small><b>{String(mission.id).padStart(2, "0")}</b><i>{mode.icon}</i><h2>{mission.name}</h2><span>{mode.name} · {mission.arena}</span><p>FIRST TO {mission.target} · {squad} VS {mission.bots} · {formatTime(mission.time)}{mission.keeper ? " · KEEPER DRONES" : ""}</p><div className="versus"><span style={{ color: team.color }}>{team.name}</span><em>VS</em><span style={{ color: rivalTeam.color }}>{rivalTeam.name}</span></div></article></section>
       <section className="arena-grid"><div className="schedule"><div className="section-head"><b>SEASON SCHEDULE</b><span>{save.unlocked}/30 OPEN</span></div>{MISSIONS.map((item, index) => <button key={item.id} disabled={item.id > save.unlocked} className={selected === index ? "active" : ""} onClick={() => setSelected(index)} style={{ "--mission": item.color } as React.CSSProperties}><i>{String(item.id).padStart(2, "0")}</i><span><b>{item.name}</b><small>{MODE_INFO[item.mode].name} · {item.arena}{item.allies ? ` · +${item.allies} MATES` : ""}</small></span><strong>{item.id > save.unlocked ? "LOCKED" : `${"★".repeat(save.stars[item.id] || 0)}${"☆".repeat(3 - (save.stars[item.id] || 0))}`}</strong></button>)}</div>
       <aside><div className="event-brief"><small>EVENT RULES</small><h2>{mode.icon} {mode.name}</h2><p>{mode.instruction}</p><div><span>YOUR TARGET<b>{mission.target}</b></span><span>RIVAL LIMIT<b>{mission.rivalTarget}</b></span><span>TIME<b>{formatTime(mission.time)}</b></span><span>REWARD<b>⬡ {mission.reward}</b></span><span>SQUAD<b>{mission.allies ? `+${mission.allies}` : "SOLO"}</b></span><span>RIVALS<b>{mission.bots}{mission.keeper ? " + GK" : ""}</b></span></div></div>
       <div className="team-picker"><small>CHOOSE YOUR TEAM</small><div>{TEAMS.map((item, index) => { const open = index <= Math.floor((save.unlocked - 1) / 5); return <button key={item.name} disabled={!open} className={save.team === index ? "active" : ""} onClick={() => setSave((current) => ({ ...current, team: index }))} style={{ "--team": item.color } as React.CSSProperties}><i>{open ? item.icon : "🔒"}</i><span>{open ? item.name : `UNLOCK AT ${index * 5 + 1}`}</span></button>; })}</div></div>
@@ -305,25 +274,5 @@ export default function NeonSportsArena() {
 
     {screen === "records" && <div className="records"><header><div className="brand"><i>NS</i><span><b>LEAGUE RECORDS</b><small>ATHLETE PROFILE</small></span></div><button onClick={() => setScreen("arena")}>RETURN TO ARENA</button></header><section><small>SEASON PERFORMANCE</small><h1>{team.name}</h1><div className="record-summary"><span>MATCH WINS<b>{save.wins}</b></span><span>LEAGUE STARS<b>{totalStars}/90</b></span><span>BEST CHAIN<b>×{save.bestCombo}</b></span><span>MISSIONS OPEN<b>{save.unlocked}/30</b></span><span>GOALS<b>{save.goals}</b></span><span>ASSISTS<b>{save.assists}</b></span><span>PERFECT RELEASES<b>{save.perfects}</b></span><span>SLAM DUNKS<b>{save.dunks}</b></span></div><h2>SPORT MASTERY</h2><div className="mode-grid">{(Object.keys(MODE_INFO) as SportMode[]).map((key) => <article key={key} style={{ "--mode": MODE_INFO[key].accent } as React.CSSProperties}><i>{MODE_INFO[key].icon}</i><small>{MODE_INFO[key].name}</small><b>{save.modeWins[key]} WINS</b><p>{MODE_INFO[key].instruction}</p></article>)}</div><p className="privacy">Season progress is saved only in this browser. No account is required.</p></section></div>}
 
-    {screen === "hangar" && <section className="hangar">
-      <canvas ref={hangarCanvas}/>
-      <header><div className="brand"><i>NS</i><span><b>3D BLUEPRINT HANGAR</b><small>SERIES NS-02 · EXACT GAME GEOMETRY</small></span></div><button onClick={() => setScreen("arena")}>RETURN TO ARENA</button></header>
-      <aside className="hangar-panel">
-        <small>ASSET</small>
-        <div className="chips">{(hangarMods?.assets ?? [{ key: "athlete", label: "Athlete" }]).map((a: any) => <button key={a.key} className={hangarAsset === a.key ? "on" : ""} onClick={() => { setHangarAsset(a.key); hangar.current?.setAsset(a.key); setWire(false); }}>{a.label}</button>)}</div>
-        <small>VIEW FROM</small>
-        <div className="chips">{["front", "rear", "left", "right", "top", "under", "quarter"].map((v) => <button key={v} onClick={() => hangar.current?.setView(v as any)}>{v.toUpperCase()}</button>)}</div>
-        {hangarAsset === "athlete" && <><small>POSE</small><div className="chips">{(hangarMods?.poses ?? []).map((p: string) => <button key={p} className={hangarPose === p ? "on" : ""} onClick={() => { setHangarPose(p); hangar.current?.setPose(p); }}>{p.toUpperCase()}</button>)}</div>
-          <small>TEAM KIT</small><div className="chips kits">{TEAMS.map((t, i) => <button key={t.name} title={t.name} className={save.team === i ? "on" : ""} style={{ "--team": t.color, "--team2": t.accent } as React.CSSProperties} disabled={i > Math.floor((save.unlocked - 1) / 5)} onClick={() => setSave((c) => ({ ...c, team: i }))}><i/></button>)}</div></>}
-        <div className="row"><button className={wire ? "on" : ""} onClick={() => setWire(hangar.current?.toggleBlueprint() ?? false)}>{wire ? "SOLID" : "WIREFRAME"}</button></div>
-        <small>DOWNLOADS</small>
-        <a className="dl" href={`/blueprints/Neon-Sports-Arena-3D-Blueprint-Atlas-v${VERSION}.pdf`} download>PDF ATLAS · 11 PLATES</a>
-        {GLB[hangarAsset] && <a className="dl" href={`/blueprints/models/${GLB[hangarAsset]}-Exact-Mesh-v${VERSION}.glb`} download>{GLB[hangarAsset]} GLB</a>}
-        <small>PLATES</small>
-        <div className="plates">{PLATES.map((p) => <button key={p} onClick={() => setPlate(p)}><img src={`/blueprints/plates/${p}.jpg`} alt={p} loading="lazy"/></button>)}</div>
-        <p>Drag to orbit, scroll or pinch to zoom. The hangar builds the same meshes the matches use.</p>
-      </aside>
-      {plate && <div className="overlay plate-view" onClick={() => setPlate(null)}><img src={`/blueprints/plates/${plate}.jpg`} alt={plate}/><p>{plate.replace(/^\d+-/, "").replace(/-/g, " ").toUpperCase()} · TAP TO CLOSE</p></div>}
-    </section>}
   </main>;
 }

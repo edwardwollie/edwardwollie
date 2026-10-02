@@ -846,7 +846,7 @@ export class ArenaEngine {
   // ---------------------------------------------------------------- AI
   driveAI(a: Actor, dt: number) {
     if (a.stun > 0) return;
-    const mode = this.mission.mode, end = a.team === "home" ? 1 : -1;
+    const mode = this.mission.mode;
     if (a.lunge > 0) {a.lunge -= dt; a.vel.x = a.lungeDir.x * 11; a.vel.z = a.lungeDir.z * 11; if (a.team === "home") this.tackleHits(a); return}
     if (a.telegraph > 0) {
       a.telegraph -= dt; a.vel.scaleInPlace(Math.exp(-8 * dt));

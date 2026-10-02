@@ -7,3 +7,6 @@ dist
 .env.*
 *.zip
 npm-debug.log*
+blueprints
+tests
+tmp

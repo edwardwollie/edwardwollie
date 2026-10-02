@@ -133,11 +133,13 @@ test("arena dimensions and sport placements agree with the layout", () => {
   }
 });
 
-test("eleven plates and the PDF atlas are packaged", () => {
+test("eleven plates and the PDF atlas are built, and none are published on the site", () => {
   const plates = fs.readdirSync(new URL("../blueprints/renders/", import.meta.url)).filter((f) => /^\d\d-.*\.png$/.test(f));
   assert.equal(plates.length, 11);
   for (const f of plates) assert.ok(fs.statSync(new URL(`../blueprints/renders/${f}`, import.meta.url)).size > 100000, f);
-  for (const path of [`../blueprints/Neon-Sports-Arena-3D-Blueprint-Atlas-v${V}.pdf`, `../public/blueprints/Neon-Sports-Arena-3D-Blueprint-Atlas-v${V}.pdf`])
-    assert.ok(fs.statSync(new URL(path, import.meta.url)).size > 1000000, path);
-  assert.equal(fs.readdirSync(new URL("../public/blueprints/plates/", import.meta.url)).length, 11);
+  assert.ok(fs.statSync(new URL(`../blueprints/Neon-Sports-Arena-3D-Blueprint-Atlas-v${V}.pdf`, import.meta.url)).size > 1000000);
+  // Blueprints are private: nothing under public/ may expose them.
+  assert.equal(fs.existsSync(new URL("../public/blueprints", import.meta.url)), false);
+  const ui = fs.readFileSync(new URL("../app/NeonSportsArena.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(ui, /blueprint|hangar/i);
 });

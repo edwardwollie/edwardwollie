@@ -17,6 +17,7 @@
   10. venue modules
   11. arena circuit (the six venues)
 - Ten GLB models.
+- The blueprints are kept private in `blueprints/`. They are not served by the website and there is no in-game blueprint viewer.
 
 ## Full 3D game
 - Six themed 3D stadiums assembled from the blueprint layout. Repeated modules are GPU instances, and the crowd (up to about 4,000 fans) is a single draw call that jumps for goals.
@@ -43,6 +44,6 @@
 
 ## Validation
 - `npm test` passes 23 checks (blueprint contract, GLB parity, Babylon winding, physics, missions, metadata and health). Lint and typecheck are clean.
-- Headless Chromium (software WebGL) was used for screenshots of all six arenas, the hangar, the hub, the settings menu and a phone layout, with no console errors.
+- Headless Chromium (software WebGL) was used for screenshots of all six arenas, the hub, the settings menu and a phone layout, with no console errors.
 - Scripted bot matches won 2-0 (match 1), 7-0 (match 2), 3-0 (matches 3 and 7), 2-0 (match 4), 4-1 (match 10), 4-0 (matches 13 and 15) and 8-5 (match 30, the final). The bot has no upgrades, so it lost the late matches 22 and 25.
 - Still to check after installation: real-GPU frame rate and the public host.
