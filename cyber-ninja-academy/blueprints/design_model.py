@@ -17,7 +17,7 @@ from mesh_geometry import build as build_mesh
 from make_textures import make_all as make_textures
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "4.0.0"
+VERSION = "4.1.0"
 PI = math.pi
 
 palette = {
@@ -42,7 +42,7 @@ for texture_name in ('suit','armor','ceramic','steel','floor','void'):
 assets: dict[str, list[dict]] = {key: [] for key in
     ("ninja", "drone", "barrier", "beam", "wall", "spike", "sweep",
      "crusher", "shard", "finish_gate", "roof_tile", "sky_tower",
-     "beacon", "jump_pad", "repair_cell")}
+     "beacon", "jump_pad", "repair_cell", "warden")}
 
 
 def part(asset, name, shape, size, at, material, group="root", rotation=None, **extra):
@@ -493,6 +493,38 @@ part("repair_cell","cellCross","box",[.34,.09,.09],[0,0,0],"red")
 part("repair_cell","cellCrossV","box",[.09,.34,.09],[0,0,0],"red")
 disc("repair_cell","cellCapTop",.3,.07,(0,.27,0),"ceramic")
 disc("repair_cell","cellCapBottom",.3,.07,(0,-.27,0),"ceramic")
+
+# ---------------------------------------------------------------------------
+# Warden: the sector boss. A 3.5 m wide hovering siege machine. Parts named
+# wardenRing*, wardenEye, cannon*, shield* are animated by the game.
+# ---------------------------------------------------------------------------
+W="warden"
+CORE=[[-1.05,.35,.35,0,2],[-.85,.95,.95,0,2.2],[-.4,1.45,1.45,0,2.4],[.15,1.6,1.6,0,2.5],
+      [.6,1.38,1.38,0,2.4],[.95,.9,.9,0,2.2],[1.15,.3,.3,0,2]]
+body(W,"wardenCore",CORE,"armor","root",segments=36)
+plate(W,"wardenBrow",CORE,.25,.75,.05,(FRONT-1.1,FRONT+1.1),"ceramic","root",thickness=.05,rings=5,taper=.08,segments=24)
+plate(W,"wardenJaw",CORE,-.75,-.2,.05,(FRONT-1.0,FRONT+1.0),"ceramic","root",thickness=.05,rings=5,taper=.08,segments=24)
+plate(W,"wardenBackShell",CORE,-.6,.8,.04,(BACK-1.3,BACK+1.3),"steel","root",thickness=.05,rings=6,taper=.06,segments=24)
+plate(W,"wardenVisorSlit",CORE,-.12,.18,.02,(FRONT-.9,FRONT+.9),"void","root",thickness=.04,rings=3,taper=0,segments=24)
+part(W,"wardenEye","sphere",[.42,.3,.2],[0,.03,.8],"red")
+part(W,"wardenPupil","sphere",[.16,.16,.08],[0,.03,.89],"gold")
+for k in range(3):
+    part(W,f"wardenRing{k}","torus",[2.4+k*.55,2.4+k*.55,.07-.015*k],[0,-.05+k*.12,0],["cyan","magenta","cyanGlass"][k],rotation=[.25*(k-1),0,.12*(k-1)])
+for i in range(4):
+    a=i*PI/2+PI/4;cx,cz=math.cos(a)*1.25,math.sin(a)*1.25
+    part(W,f"pylon{i}","box",[.32,.32,.95],[cx,-.15,cz],"steel",rotation=[0,-a+PI/2,0])
+    part(W,f"cannon{i}","loft",[.2,.2,.9],[cx*1.35,-.25,cz*1.35],"armor",rotation=[0,-a+PI/2,0],
+         profile=[[-.45,.18,.18,0,2],[-.3,.24,.24,0,2.4],[.3,.2,.2,0,2.4],[.45,.12,.12,0,2]],segments=14,axis="z")
+    part(W,f"cannonMuzzle{i}","torus",[.17,.17,.04],[cx*1.35+math.cos(a)*.45,-.25,cz*1.35+math.sin(a)*.45],"orange",rotation=[PI/2,-a+PI/2,0])
+    part(W,f"shieldFin{i}","blade",[.06,.5,1.4],[math.cos(a+PI/4)*1.0,.75,math.sin(a+PI/4)*1.0],"ceramic",rotation=[-1.2,-(a+PI/4)+PI/2,0])
+    part(W,f"thruster{i}","cylinder",[.26,.3,.26],[math.cos(a)*.55,-1.0,math.sin(a)*.55],"steel")
+    part(W,f"thrusterGlow{i}","cylinder",[.2,.06,.2],[math.cos(a)*.55,-1.17,math.sin(a)*.55],"cyan")
+for i in range(5):
+    a=i*2*PI/5
+    part(W,f"crownSpike{i}","octa",[.14,.55,.14],[math.cos(a)*.3,1.3,math.sin(a)*.3],"magenta",rotation=[math.sin(a)*.3,0,-math.cos(a)*.3])
+part(W,"crownCore","octa",[.3,.4,.3],[0,1.3,0],"cyan")
+for i,y in enumerate([-.45,-.25]):
+    part(W,f"bellyLight{i}","torus",[1.1-i*.3,1.1-i*.3,.03],[0,y-.45,0],"magenta")
 
 spec = {
     "version": VERSION, "units": "metres", "forward": "+Z",

@@ -14,7 +14,7 @@ EXTRACTED = json.loads((ROOT / "blueprints/runtime-extracted.json").read_text())
 POSES = json.loads((ROOT / "blueprints/runtime-poses.json").read_text())
 assert EXTRACTED["version"] == SPEC["version"] == POSES["version"]
 SS = 2  # supersampling factor for anti-aliased plates
-PLATES = 6
+PLATES = 7
 TEXTURES={key:np.array(Image.open(ROOT/"public"/value["texture"].lstrip("/")).convert("RGB"),dtype=np.float32)/255
           for key,value in SPEC["palette"].items() if value.get("texture")}
 OUT = ROOT / "blueprints" / "renders"
@@ -370,6 +370,26 @@ def make_survival_plate():
     img.save(OUT/"06-survival-course-hazards.png",optimize=True)
 
 
+def make_warden_plate():
+    pts=np.concatenate([np.array(p["positions"]).reshape(-1,3) for p in EXTRACTED["assets"]["warden"]])
+    span=pts[:,0].max()-pts[:,0].min();tall=pts[:,1].max()-pts[:,1].min()
+    img,d,w,h=plate("WARDEN / SECTOR BOSS","SIX SIDES + QUARTER VIEWS",
+                    f"{span:.1f} m SPAN  |  {tall:.1f} m TALL  |  {len(SPEC['assets']['warden'])} PARTS  |  {sum(len(p['mesh']['indices'])//3 for p in SPEC['assets']['warden']):,} TRIANGLES")
+    entries=[("FRONT","FRONT","EYE / BROW / JAW PLATES"),("REAR","REAR","BACK SHELL / CROWN"),("LEFT","LEFT","CANNON PYLONS / RINGS"),
+             ("TOP","TOP","CROWN SPIKES / SHIELD FINS"),("UNDERSIDE","UNDERSIDE","THRUSTERS / BELLY LIGHTS"),("RIGHT","RIGHT","PROFILE"),
+             ("ISO","FRONT QUARTER","ORBIT RINGS ROTATE IN PLAY"),("ISO REAR","REAR QUARTER","WEAK POINT: THE EYE")]
+    for i,(view,title,sub) in enumerate(entries):
+        col,row=i%4,i//4
+        box=(45+col*510,172+row*655,535+col*510,807+row*655)
+        panel(d,box,title,sub,i+1)
+        proj=render_asset(d,"warden",view,box,fit=.82,ret=True)
+        if view=="FRONT":
+            l=proj([pts[:,0].min(),0,0]);r=proj([pts[:,0].max(),0,0])
+            dim_line(d,(l[0],box[3]-60),(r[0],box[3]-60),f"{span:.2f} m",vertical=False)
+    footer(d,w,h,7)
+    img.save(OUT/"07-warden-boss.png",optimize=True)
+
+
 def make_og_image():
     w,h=1200,630;img=Image.new("RGB",(w,h),(3,9,22));d=ImageDraw.Draw(img)
     for x in range(0,w,38):d.line((x,0,x,h),fill=(12,31,50),width=1)
@@ -392,6 +412,6 @@ def make_og_image():
 if __name__=="__main__":
     import sys
     jobs={"1":make_character_plate,"2":make_quarter_plate,"3":make_detail_plate,"4":make_pose_plate,
-          "5":make_city_plate,"6":make_survival_plate,"og":make_og_image}
+          "5":make_city_plate,"6":make_survival_plate,"7":make_warden_plate,"og":make_og_image}
     for key in (sys.argv[1:] or list(jobs)):jobs[key]()
     for path in sorted(OUT.glob("*.png")):print(path.name,path.stat().st_size)

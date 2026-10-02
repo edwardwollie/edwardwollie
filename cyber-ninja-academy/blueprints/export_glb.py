@@ -96,3 +96,4 @@ if __name__=='__main__':
     export('ninja',f'Cyber-Ninja-Operative-Exact-Mesh-v{v}.glb')
     export('drone',f'Aegis-Hunter-Drone-Exact-Mesh-v{v}.glb')
     export('beacon',f'Uplink-Beacon-Exact-Mesh-v{v}.glb')
+    export('warden',f'Warden-Boss-Exact-Mesh-v{v}.glb')

@@ -3,7 +3,7 @@
  * tested without a renderer: rooftops, props, bridges, jump pads, pickups,
  * drone anchors and the extraction beacon.
  */
-export type Box = {min:[number,number,number];max:[number,number,number];kind:"roof"|"prop"|"bridge"|"lip"};
+export type Box = {min:[number,number,number];max:[number,number,number];kind:"roof"|"prop"|"bridge"|"lip"|"wall"};
 export type Roof = {i:number;j:number;x:number;z:number;w:number;d:number;h:number;box:Box};
 export type Sector = {id:number;name:string;zone:string;grid:number;shards:number;drones:number;elite:number;reward:number;par:number;color:string;seed:number};
 export type CityPlan = {
@@ -11,6 +11,7 @@ export type CityPlan = {
   shards:{x:number;y:number;z:number}[];repairs:{x:number;y:number;z:number}[];
   drones:{x:number;y:number;z:number;elite:boolean}[];
   spawn:{x:number;y:number;z:number;yaw:number};beacon:{x:number;y:number;z:number};
+  boss:{x:number;y:number;z:number;hp:number};walls:Box[];
   bounds:{min:number;max:number};
 };
 
@@ -91,6 +92,17 @@ export function planCity(sector:Sector):CityPlan{
     if(r.j===0)solids.push(box([r.x-r.w/2,r.h,r.z-r.d/2],[r.x+r.w/2,r.h+.32,r.z-r.d/2+.35],"lip"));
     if(r.j===n-1)solids.push(box([r.x-r.w/2,r.h,r.z+r.d/2-.35],[r.x+r.w/2,r.h+.32,r.z+r.d/2],"lip"));
   }
+  // Neon billboard walls spanning some unbridged gaps: wall-run across them.
+  const walls:Box[]=[];const bridged=new Set(edges.flatMap(([a,b])=>[`${a.i},${a.j}>${b.i},${b.j}`,`${b.i},${b.j}>${a.i},${a.j}`]));
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++)for(const [di,dj] of [[1,0],[0,1]]){
+    const a=at(i,j),b=i+di<n&&j+dj<n?at(i+di,j+dj):undefined;
+    if(!b||bridged.has(`${a.i},${a.j}>${b.i},${b.j}`)||rnd()>.55)continue;
+    const y0=Math.min(a.h,b.h)+.4,y1=Math.max(a.h,b.h)+3.6,side=rnd()<.5?-1:1;
+    let wall:Box;
+    if(di){const x0=a.x+a.w/2-1.2,x1=b.x-b.w/2+1.2,zc=(a.z+b.z)/2+side*Math.min(a.d,b.d)*.32;wall=box([x0,y0,zc-.2],[x1,y1,zc+.2],"wall")}
+    else{const z0=a.z+a.d/2-1.2,z1=b.z-b.d/2+1.2,xc=(a.x+b.x)/2+side*Math.min(a.w,b.w)*.32;wall=box([xc-.2,y0,z0],[xc+.2,y1,z1],"wall")}
+    walls.push(wall);solids.push(wall);
+  }
   const order=[...roofs].sort((a,b)=>(a.i+a.j)-(b.i+b.j)||a.i-b.i);
   const summit=order[order.length-1];
   // Shards: spread over roofs, a third of them perched on props.
@@ -103,7 +115,8 @@ export function planCity(sector:Sector):CityPlan{
       const x=r.x+(rnd()-.5)*(r.w-5),z=r.z+(rnd()-.5)*(r.d-5);
       // A shard that lands inside a prop footprint is lifted onto its top.
       const under=solids.find(b=>b.kind==="prop"&&x>b.min[0]-.4&&x<b.max[0]+.4&&z>b.min[2]-.4&&z<b.max[2]+.4);
-      shards.push({x,y:(under?under.max[1]:r.h)+1.2,z});
+      if(under)shards.push({x:(under.min[0]+under.max[0])/2,y:under.max[1]+1.2,z:(under.min[2]+under.max[2])/2});
+      else shards.push({x,y:r.h+1.2,z});
     }
   }
   const drones:CityPlan["drones"]=[];
@@ -116,5 +129,6 @@ export function planCity(sector:Sector):CityPlan{
   return {roofs,solids,pads,shards,repairs,drones,
     spawn:{x:start.x,y:start.h,z:start.z,yaw:Math.PI/4},
     beacon:{x:summit.x,y:summit.h,z:summit.z},
+    boss:{x:summit.x,y:summit.h+3.7,z:summit.z,hp:24+10*(sector.id-1)},walls,
     bounds:{min:-CELL,max:n*CELL}};
 }

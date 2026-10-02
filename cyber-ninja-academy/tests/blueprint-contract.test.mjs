@@ -15,7 +15,7 @@ function nearArray(actual,expected,label,tolerance=.00002){
 }
 
 test('one asset specification supplies complete production meshes',()=>{
-  assert.equal(spec.version,'4.0.0');
+  assert.equal(spec.version,'4.1.0');
   assert.equal(pkg.version,spec.version);
   assert.equal(portal.version,spec.version);
   assert.equal(portal.url,'https://ninja.flexzonicgames.com');
@@ -36,7 +36,8 @@ test('one asset specification supplies complete production meshes',()=>{
     }
   }
   assert.equal(spec.assets.ninja.length,131);
-  assert.equal(Object.values(spec.assets).flat().length,353);
+  assert.equal(Object.values(spec.assets).flat().length,395);
+  assert.equal(spec.assets.warden.length,42);
   assert.ok(spec.assets.ninja.reduce((n,p)=>n+p.mesh.indices.length/3,0)>20000,'high detail operative');
   assert.equal(spec.dimensions.ninjaHeight,1.92);
   for(const joint of ['hips','spine','chest','neck','head','leftUpperArm','leftForeArm','leftHand','rightUpperArm',
@@ -100,9 +101,10 @@ function glb(asset,file){
 }
 
 test('standalone GLBs retain neutral-pose vertices, normals, UVs and indices',()=>{
-  glb('ninja','Cyber-Ninja-Operative-Exact-Mesh-v4.0.0.glb');
-  glb('drone','Aegis-Hunter-Drone-Exact-Mesh-v4.0.0.glb');
-  glb('beacon','Uplink-Beacon-Exact-Mesh-v4.0.0.glb');
+  glb('ninja','Cyber-Ninja-Operative-Exact-Mesh-v4.1.0.glb');
+  glb('drone','Aegis-Hunter-Drone-Exact-Mesh-v4.1.0.glb');
+  glb('beacon','Uplink-Beacon-Exact-Mesh-v4.1.0.glb');
+  glb('warden','Warden-Boss-Exact-Mesh-v4.1.0.glb');
 });
 
 test('three 3-metre lanes have deliberate, distinct obstacle actions',()=>{
@@ -123,21 +125,22 @@ test('three 3-metre lanes have deliberate, distinct obstacle actions',()=>{
   assert.ok(part('ninja','photonBlade'));
   assert.ok(part('ninja','visor').shape==='shell');
   assert.ok(part('ninja','ribcage').shape==='loft');
+  for(const name of ['wardenEye','wardenRing0','wardenRing1','wardenRing2'])assert.ok(part('warden',name),name);
 });
 
 test('blueprint pose sheet is read back from the game rig',()=>{
   const poses=read('../blueprints/runtime-poses.json');
   assert.equal(poses.version,spec.version);
-  assert.deepEqual(Object.keys(poses.poses).sort(),['dash','finisher','jump','run','slide','stance','strike']);
+  assert.deepEqual(Object.keys(poses.poses).sort(),['dash','finisher','jump','run','slide','stance','strike','wallrun']);
   for(const parts of Object.values(poses.poses))assert.equal(parts.length,spec.assets.ninja.length);
   const head=poses.joints.head;assert.ok(head[1]>1.6&&head[1]<1.8,'head height');
 });
 
 test('six sides, quarter views, detail, poses, city assets and hazards are packaged',()=>{
   for(const file of ['01-ninja-six-view-atlas.png','02-ninja-quarter-views.png','03-ninja-runtime-detail.png',
-    '04-articulation-pose-sheet.png','05-city-ops-assets.png','06-survival-course-hazards.png']){
+    '04-articulation-pose-sheet.png','05-city-ops-assets.png','06-survival-course-hazards.png','07-warden-boss.png']){
     const path=new URL(`../blueprints/renders/${file}`,import.meta.url);
     assert.ok(fs.statSync(path).size>50000,file);
   }
-  assert.ok(fs.statSync(new URL('../blueprints/Cyber-Ninja-3D-Blueprint-Atlas-v4.0.0.pdf',import.meta.url)).size>50000);
+  assert.ok(fs.statSync(new URL('../blueprints/Cyber-Ninja-3D-Blueprint-Atlas-v4.1.0.pdf',import.meta.url)).size>50000);
 });

@@ -43,14 +43,14 @@ healthy=0
 for ((attempt=1;attempt<=30;attempt++));do
   if curl -fsS "http://127.0.0.1:${CYBER_NINJA_PORT}/healthz" | grep -qx 'cyber-ninja-ok' && \
      curl -fsS "http://127.0.0.1:${CYBER_NINJA_PORT}/.well-known/flexzonic-game.json" | \
-       grep -Eq '"version"[[:space:]]*:[[:space:]]*"4\.0\.0"'; then
+       grep -Eq '"version"[[:space:]]*:[[:space:]]*"4\.1\.0"'; then
     healthy=1;break
   fi
   sleep 2
 done
-[[ "$healthy" == 1 ]] || { echo "Version 4.0.0 did not pass its local health checks."; false; }
+[[ "$healthy" == 1 ]] || { echo "Version 4.1.0 did not pass its local health checks."; false; }
 
 trap - ERR
-echo "Cyber Ninja Academy v4.0.0 is healthy on host port $CYBER_NINJA_PORT."
+echo "Cyber Ninja Academy v4.1.0 is healthy on host port $CYBER_NINJA_PORT."
 if [[ "$BACKUP_CREATED" == 1 ]];then echo "Rollback copy: $BACKUP_DIR";fi
-echo "Public check: https://ninja.flexzonicgames.com/?v=4.0.0"
+echo "Public check: https://ninja.flexzonicgames.com/?v=4.1.0"

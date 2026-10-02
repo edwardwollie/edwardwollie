@@ -5,14 +5,18 @@ import {
 } from "@babylonjs/core";
 import {BlueprintBuilder} from "./blueprint-mesh";
 import {planCity,type Box,type CityPlan,type Sector} from "./city-plan";
-import {airPose,applyPose,buildNinjaRig,dashPose,hurtPose,idlePose,runPose,strikePose,type Rig} from "./ninja-rig";
+import {airPose,applyPose,buildNinjaRig,dashPose,hurtPose,idlePose,runPose,strikePose,wallRunPose,type Pose,type Rig} from "./ninja-rig";
 import {cinematicScene,cityFloor,heroFill,isMobile,postFx,skyDome,studioLights,Synth} from "./scene-kit";
 import type {UpgradeKey} from "./ninja-data";
 
 type Up=Record<UpgradeKey,number>;
 type CB={onHud:(v:any)=>void;onMessage:(t:string,k:string)=>void;onComplete:(v:any)=>void;onFail:()=>void};
 type Drone={root:TransformNode;hp:number;maxHp:number;elite:boolean;anchor:Vector3;vel:Vector3;cooldown:number;charge:number;
-  alive:boolean;flash:number;phase:number;ring?:Mesh;ringMat?:StandardMaterial;aggro:boolean};
+  alive:boolean;flash:number;phase:number;ring?:Mesh;ringMat?:StandardMaterial;aggro:boolean;radius:number;minion?:boolean;boss?:boolean};
+/** Ghost sample: time, position, facing, pose id and two pose parameters. */
+export type GhostRun={sector:number;time:number;samples:number[]};
+export const GHOST_STRIDE=8;
+const POSE_IDS={idle:0,run:1,air:2,strike:3,dash:4,wallrun:6,hurt:7} as const;
 type Bolt={mesh:Mesh;vel:Vector3;ttl:number;damage:number;reflected?:boolean};
 type Star={mesh:Mesh;vel:Vector3;ttl:number;target:Drone|null};
 type Pickup={root:TransformNode;pos:Vector3;taken:boolean;kind:"shard"|"repair"};
@@ -45,6 +49,29 @@ export function moveBody(pos:Vector3,vel:Vector3,dt:number,solids:Box[],wasGroun
   return {grounded,hitWall};
 }
 
+/**
+ * Wall contact for wall-running: a tall face within reach of the operative's
+ * side. Returns the outward wall normal or null.
+ */
+export function wallContact(pos:Vector3,solids:Box[]){
+  const r=PLAYER.radius,reach=.22;
+  for(const b of solids){
+    if(b.kind==="lip"||b.kind==="bridge"||b.max[1]<pos.y+1.5||b.min[1]>pos.y+.3)continue;
+    const inX=pos.x>b.min[0]+.05&&pos.x<b.max[0]-.05,inZ=pos.z>b.min[2]+.05&&pos.z<b.max[2]-.05;
+    if(inZ){
+      const toMin=b.min[0]-(pos.x+r),toMax=pos.x-r-b.max[0];
+      if(toMin>-.02&&toMin<reach)return new Vector3(-1,0,0);
+      if(toMax>-.02&&toMax<reach)return new Vector3(1,0,0);
+    }
+    if(inX){
+      const toMin=b.min[2]-(pos.z+r),toMax=pos.z-r-b.max[2];
+      if(toMin>-.02&&toMin<reach)return new Vector3(0,0,-1);
+      if(toMax>-.02&&toMax<reach)return new Vector3(0,0,1);
+    }
+  }
+  return null;
+}
+
 /** Ray against boxes; returns the nearest hit distance or Infinity. */
 export function rayBoxes(origin:Vector3,dir:Vector3,maxDist:number,solids:Box[]){
   let best=maxDist;
@@ -61,6 +88,19 @@ export function rayBoxes(origin:Vector3,dir:Vector3,maxDist:number,solids:Box[])
   return best;
 }
 
+/** Rebuild a pose from a recorded (id, a, b) triple. */
+export function poseFor(id:number,a:number,b:number,time:number):Pose{
+  switch(id){
+    case POSE_IDS.hurt:return hurtPose();
+    case POSE_IDS.dash:return dashPose();
+    case POSE_IDS.strike:return strikePose(a,b);
+    case POSE_IDS.wallrun:return wallRunPose(a,b||1);
+    case POSE_IDS.air:return airPose(a,0);
+    case POSE_IDS.run:return runPose(a,b||1);
+    default:return idlePose(time);
+  }
+}
+
 export class OpenWorldEngine{
   engine:Engine;scene:Scene;camera:UniversalCamera;builder:BlueprintBuilder;rig:Rig;plan:CityPlan;sector:Sector;up:Up;cb:CB;
   synth=new Synth();shadow:any;
@@ -74,8 +114,12 @@ export class OpenWorldEngine{
   health=100;invuln=0;hurtTimer=0;shardsTaken=0;dronesDown=0;score=0;time=0;finished=false;falls=0;
   lastSafe=new Vector3();lockTarget:Drone|null=null;shake=0;hitStop=0;hudClock=0;runClock=0;flip=0;
   last=performance.now();pointerLocked=false;canvas:HTMLCanvasElement;
+  wallRun=0;wallNormal=new Vector3();wallCooldown=0;wallSide=0;wallRuns=0;
+  boss:Drone|null=null;bossParts=new Map<string,Mesh>();bossState:"dormant"|"active"|"defeated"="dormant";bossAttack=2.5;bossStagger=0;bossDamageWindow:number[]=[];
+  bossBaseY=0;rain:{mesh:Mesh;pos:Vector3;t:number}[]=[];shock:{mesh:Mesh;r:number;y:number;hit:boolean}|null=null;minionsSummoned=false;
+  poseId=0;poseA=0;poseB=0;recording:number[]=[];ghost:GhostRun|null=null;ghostRig:Rig|null=null;ghostIndex=0;
 
-  constructor(canvas:HTMLCanvasElement,sector:Sector,up:Up,cb:CB,opts:{music?:boolean}={}){
+  constructor(canvas:HTMLCanvasElement,sector:Sector,up:Up,cb:CB,opts:{music?:boolean;ghost?:GhostRun|null}={}){
     this.canvas=canvas;this.sector=sector;this.up=up;this.cb=cb;
     this.engine=new Engine(canvas,true,{antialias:true,powerPreference:"high-performance",stencil:true});
     this.engine.setHardwareScalingLevel(Math.max(1,window.devicePixelRatio/(isMobile()?1.3:1.6)));
@@ -86,7 +130,8 @@ export class OpenWorldEngine{
     this.camera.minZ=.1;this.camera.maxZ=2000;this.camera.fov=.95;
     this.rig=buildNinjaRig(this.scene,this.builder,"operative");
     this.rig.root.getChildMeshes().forEach(m=>{this.shadow.addShadowCaster(m);m.receiveShadows=true});
-    this.buildCity();this.spawnActors();
+    this.buildCity();this.spawnActors();this.spawnBoss();
+    if(opts.ghost&&opts.ghost.sector===sector.id&&opts.ghost.samples.length>=GHOST_STRIDE*2)this.makeGhost(opts.ghost);
     const sp=this.plan.spawn;this.pos.set(sp.x,sp.y,sp.z);this.lastSafe.copyFrom(this.pos);this.yaw=this.facing=this.camYaw=sp.yaw;
     postFx(this.scene,this.camera);heroFill(this.scene,this.rig.root,this.camera);
     this.bind();if(opts.music)this.synth.setMusic(true);
@@ -97,6 +142,27 @@ export class OpenWorldEngine{
   resize=()=>this.engine.resize();
 
   // ------------------------------------------------------------------ world
+  billboardMat:StandardMaterial|null=null;
+  billboard(length:number,height:number){
+    const base=this.billboardBase(),m=base.clone(`billboard-${length.toFixed(1)}`) as StandardMaterial;
+    const tex=(base.emissiveTexture as DynamicTexture|null)?.clone();
+    if(tex){tex.uScale=Math.max(1,Math.round(length/(height*1.6)));m.emissiveTexture=tex}
+    return m;
+  }
+  billboardBase(){
+    if(this.billboardMat)return this.billboardMat;
+    const m=new StandardMaterial("billboard",this.scene);m.diffuseColor=new Color3(.05,.08,.14);m.specularColor=new Color3(.2,.2,.3);
+    if(this.scene.getEngine().getClassName()!=="NullEngine"){
+      const tex=new DynamicTexture("billboardTex",{width:512,height:256},this.scene,true);
+      const ctx=tex.getContext() as CanvasRenderingContext2D;
+      const g=ctx.createLinearGradient(0,0,512,0);g.addColorStop(0,"#ff3f9e");g.addColorStop(1,"#27efff");
+      ctx.fillStyle="#060a18";ctx.fillRect(0,0,512,256);ctx.strokeStyle=g;ctx.lineWidth=10;ctx.strokeRect(8,8,496,240);
+      ctx.fillStyle=g;ctx.font="bold 92px sans-serif";ctx.textAlign="center";ctx.fillText("刃 RUN",256,120);
+      ctx.font="bold 34px monospace";ctx.fillStyle="#cfff45";ctx.fillText("WALL-RUN ZONE ▶▶",256,200);tex.update();
+      m.emissiveTexture=tex;m.emissiveColor=new Color3(.42,.42,.46);
+    }
+    this.billboardMat=m;return m;
+  }
   facade(){
     const tex=new DynamicTexture("facadeTex",{width:512,height:512},this.scene,true);
     const ctx=tex.getContext() as CanvasRenderingContext2D;
@@ -133,7 +199,9 @@ export class OpenWorldEngine{
       const w=b.max[0]-b.min[0],h=b.max[1]-b.min[1],d=b.max[2]-b.min[2];
       const mesh=MeshBuilder.CreateBox(`${b.kind}`,{width:w,height:h,depth:d},this.scene);
       mesh.position.set((b.min[0]+b.max[0])/2,(b.min[1]+b.max[1])/2,(b.min[2]+b.max[2])/2);
-      mesh.material=b.kind==="prop"?steel:b.kind==="lip"?lip:bridge;
+      mesh.material=b.kind==="prop"?steel:b.kind==="lip"?lip:b.kind==="wall"?this.billboard(Math.max(w,d),h):bridge;
+      // Billboards are lit signs, not light sources: keep them out of the glow pass.
+      if(b.kind==="wall")for(const layer of this.scene.effectLayers)(layer as unknown as {addExcludedMesh?:(m:Mesh)=>void}).addExcludedMesh?.(mesh);
       mesh.receiveShadows=true;this.shadow.addShadowCaster(mesh);
       if(b.kind==="prop"){
         const strip=MeshBuilder.CreateBox("propLight",{width:w+.04,height:.05,depth:d+.04},this.scene);
@@ -185,7 +253,7 @@ export class OpenWorldEngine{
       root.getChildMeshes().forEach(m=>this.shadow.addShadowCaster(m));
       const hp=(d.elite?6:3);
       this.drones.push({root,hp,maxHp:hp,elite:d.elite,anchor:new Vector3(d.x,d.y,d.z),vel:new Vector3(),
-        cooldown:1.5+Math.random()*2,charge:0,alive:true,flash:0,phase:Math.random()*6,ring,ringMat,aggro:false});
+        cooldown:1.5+Math.random()*2,charge:0,alive:true,flash:0,phase:Math.random()*6,ring,ringMat,aggro:false,radius:d.elite?1.25:1});
     }
   }
 
@@ -220,6 +288,14 @@ export class OpenWorldEngine{
   }
   doJump(){
     const agility=this.up.agility*.45;
+    if(this.wallRun>0){
+      // Wall jump: kick away and up, refunding the double jump.
+      const n=this.wallNormal,along=new Vector3(this.vel.x,0,this.vel.z);
+      this.vel.set(n.x*8.5+along.x*.55,PLAYER.jump+.8+agility,n.z*8.5+along.z*.55);
+      this.facing=Math.atan2(this.vel.x,this.vel.z);this.wallRun=0;this.wallCooldown=.28;this.jumps=1;this.flip=1;
+      this.synth.tone(480,.12,.025,"triangle",1.7);this.burst(this.pos.add(new Vector3(0,1,0)),new Color3(.8,1,.3),8,6);
+      this.cb.onMessage("WALL JUMP","info");return true;
+    }
     if(this.grounded||this.coyote>0){
       this.vel.y=PLAYER.jump+agility;this.grounded=false;this.coyote=0;this.synth.tone(360,.09,.02,"sine",1.8);return true;
     }
@@ -282,11 +358,13 @@ export class OpenWorldEngine{
     const fx=Math.sin(this.camYaw),fz=Math.cos(this.camYaw);
     return new Vector3(fx*y+fz*x,0,fz*y-fx*x);
   }
+  /** Everything the katana and shuriken can hit: drones, minions and the Warden. */
+  targets(){return this.boss&&this.bossState==="active"?[...this.drones,this.boss]:this.drones}
   /** Nearest live drone within range, weighted toward where the player aims. */
   softTarget(range:number,cone:number,useCamera=false){
     const aim=useCamera?Math.atan2(this.cameraForward().x,this.cameraForward().z):this.facing;
     let best:Drone|null=null,score=Infinity;
-    for(const d of this.drones){
+    for(const d of this.targets()){
       if(!d.alive)continue;
       const v=d.root.position.subtract(this.pos),dist=v.length();if(dist>range)continue;
       let da=Math.atan2(v.x,v.z)-aim;da=Math.atan2(Math.sin(da),Math.cos(da));
@@ -312,18 +390,23 @@ export class OpenWorldEngine{
   }
   hitDrone(d:Drone,dmg:number,from:Vector3){
     if(!d.alive)return;
+    if(d.boss)return this.hitBoss(dmg,from);
     d.hp-=dmg;d.flash=.12;d.aggro=true;this.hitStop=.05;this.shake=Math.max(this.shake,.18);
     const push=d.root.position.subtract(from);push.normalize();d.vel.addInPlace(push.scale(9));
     this.burst(d.root.position,new Color3(1,.25,.65),7,7);this.synth.tone(150,.1,.05,"square",.5);
     if(d.hp<=0){
-      d.alive=false;d.root.setEnabled(false);this.dronesDown++;this.score+=d.elite?400:180;
+      d.alive=false;d.root.setEnabled(false);if(!d.minion)this.dronesDown++;this.score+=d.elite?400:d.minion?90:180;
       this.burst(d.root.position,new Color3(1,.1,.5),22,11);this.burst(d.root.position,new Color3(.1,1,1),12,8);
       this.synth.noise(.4,.08,1400);this.synth.tone(70,.4,.06,"sawtooth",.4);
       this.cb.onMessage(d.elite?"ELITE SENTINEL DOWN":"DRONE DESTROYED","strike");this.checkObjectives();
     }
   }
+  get droneTotal(){return this.drones.filter(d=>!d.minion).length}
   checkObjectives(){
-    if(!this.beaconActive&&this.shardsTaken>=this.plan.shards.length&&this.dronesDown>=this.drones.length){
+    if(this.bossState==="dormant"&&this.shardsTaken>=this.plan.shards.length&&this.dronesDown>=this.droneTotal&&this.boss){
+      this.awakenBoss();return;
+    }
+    if(!this.beaconActive&&this.bossState!=="active"&&this.shardsTaken>=this.plan.shards.length&&this.dronesDown>=this.droneTotal){
       this.beaconActive=true;this.beaconRoot.getChildMeshes().forEach(m=>m.visibility=1);this.beaconLight.intensity=2.4;
       this.synth.tone(440,.3,.04,"triangle",2);setTimeout(()=>this.synth.tone(660,.4,.04,"triangle",1.5),180);
       this.cb.onMessage("UPLINK ONLINE — REACH THE BEACON","good");
@@ -332,8 +415,9 @@ export class OpenWorldEngine{
   objective(){
     const p=this.pos;let best:{pos:Vector3;kind:string}|null=null,bd=Infinity;
     if(this.beaconActive)return {pos:this.beaconRoot.position.add(new Vector3(0,3,0)),kind:"beacon"};
+    if(this.bossState==="active"&&this.boss)return {pos:this.boss.root.position,kind:"boss"};
     for(const s of this.pickups)if(!s.taken&&s.kind==="shard"){const d=Vector3.Distance(p,s.pos);if(d<bd){bd=d;best={pos:s.pos,kind:"shard"}}}
-    if(!best)for(const d of this.drones)if(d.alive){const k=Vector3.Distance(p,d.root.position);if(k<bd){bd=k;best={pos:d.root.position,kind:"drone"}}}
+    if(!best)for(const d of this.drones)if(d.alive&&!d.minion){const k=Vector3.Distance(p,d.root.position);if(k<bd){bd=k;best={pos:d.root.position,kind:"drone"}}}
     return best;
   }
   project(world:Vector3){
@@ -349,8 +433,8 @@ export class OpenWorldEngine{
     if(this.finished){this.scene.render();return}
     if(this.hitStop>0){this.hitStop-=dt;dt*=.15}
     this.time+=dt;
-    this.updatePlayer(dt);this.updateCombat(dt);this.updateDrones(dt);this.updateProjectiles(dt);this.updatePickups(dt);
-    this.updateRig(dt);this.updateCamera(dt);
+    this.updatePlayer(dt);this.updateCombat(dt);this.updateDrones(dt);this.updateBoss(dt);this.updateProjectiles(dt);this.updatePickups(dt);
+    this.updateRig(dt);this.updateGhost();this.updateCamera(dt);
     if(this.health<=0){this.finished=true;this.synth.setMusic(false);this.cb.onFail();}
     else if(this.beaconActive&&Vector3.Distance(this.pos,this.beaconRoot.position)<3.2)this.complete();
     this.hudClock+=dt;if(this.hudClock>.08){this.hudClock=0;this.pushHud()}
@@ -359,12 +443,14 @@ export class OpenWorldEngine{
   updatePlayer(dt:number){
     this.coyote=Math.max(0,this.coyote-dt);this.jumpBuffer=Math.max(0,this.jumpBuffer-dt);
     this.dashCooldown=Math.max(0,this.dashCooldown-dt);this.invuln=Math.max(0,this.invuln-dt);this.hurtTimer=Math.max(0,this.hurtTimer-dt);
+    this.wallCooldown=Math.max(0,this.wallCooldown-dt);
     this.starRegen+=dt;if(this.starCharges<3&&this.starRegen>2.2){this.starCharges++;this.starRegen=0}
     if(this.starCharges>=3)this.starRegen=0;
     const dir=this.inputDir();const moving=dir.lengthSquared()>.01;
     const sprint=this.keys.has("ShiftLeft")||this.keys.has("ShiftRight")||this.sprint;
     const top=(sprint?PLAYER.sprint:PLAYER.run)*(1+this.up.agility*.06);
-    if(this.dashTimer>0){
+    if(this.wallRun>0)this.updateWallRun(dt,dir,top);
+    else if(this.dashTimer>0){
       this.dashTimer-=dt;this.vel.x=this.dashDir.x*PLAYER.dash;this.vel.z=this.dashDir.z*PLAYER.dash;this.vel.y=Math.max(this.vel.y,0);
       if(Math.random()<.6)this.burst(this.pos.add(new Vector3(0,1,0)),new Color3(.2,.9,1),1,1);
     }else{
@@ -380,8 +466,10 @@ export class OpenWorldEngine{
       this.vel.y-=PLAYER.gravity*dt;if(this.vel.y<-42)this.vel.y=-42;
     }
     if(this.jumpBuffer>0&&this.doJump())this.jumpBuffer=0;
+    if(!this.grounded&&this.wallRun<=0&&this.wallCooldown<=0&&this.dashTimer<=0&&moving&&this.vel.y<6)this.tryWallRun(dir);
     const was=this.grounded;
     const r=moveBody(this.pos,this.vel,dt,this.plan.solids,was);
+    if(r.grounded&&this.wallRun>0)this.wallRun=0;
     if(r.grounded){
       if(!was&&this.vel.y<=0){this.synth.tone(90,.06,.02,"sine");this.flip=0}
       this.grounded=true;this.jumps=1;this.coyote=.12;
@@ -402,6 +490,173 @@ export class OpenWorldEngine{
       this.synth.tone(110,.4,.05,"square",.5);this.cb.onMessage("FALL RECOVERY — −15 INTEGRITY","warn");
     }
   }
+  tryWallRun(dir:Vector3){
+    const n=wallContact(this.pos,this.plan.solids);if(!n)return;
+    // Only run when the motion is mostly along the wall, not straight into it.
+    const flat=new Vector3(this.vel.x,0,this.vel.z),speed=flat.length();
+    const tangent=dir.subtract(n.scale(Vector3.Dot(dir,n)));
+    if(tangent.length()<.35||speed<3.5)return;
+    tangent.normalize();if(Vector3.Dot(tangent,flat)<0)tangent.scaleInPlace(-1);
+    this.wallRun=1.25;this.wallNormal.copyFrom(n);this.wallRuns++;
+    const keep=Math.max(speed,PLAYER.run+1.5);this.vel.x=tangent.x*keep;this.vel.z=tangent.z*keep;this.vel.y=Math.max(this.vel.y,2.2);
+    this.wallSide=Math.sign(Vector3.Cross(new Vector3(0,1,0),tangent).dot(n.scale(-1)))||1;
+    this.facing=Math.atan2(tangent.x,tangent.z);this.jumps=1;
+    this.synth.noise(.15,.03,2400);if(this.wallRuns===1)this.cb.onMessage("WALL-RUN — SPACE TO KICK OFF","good");
+  }
+  updateWallRun(dt:number,dir:Vector3,top:number){
+    this.wallRun-=dt;
+    const n=this.wallNormal;let tangent=new Vector3(this.vel.x,0,this.vel.z);
+    tangent=tangent.subtract(n.scale(Vector3.Dot(tangent,n)));
+    const speed=Math.max(PLAYER.run+1,Math.min(top+2,tangent.length()+dt*6));
+    if(tangent.lengthSquared()<.01){this.wallRun=0;return}
+    tangent.normalize();
+    this.vel.x=tangent.x*speed-n.x*1.2;this.vel.z=tangent.z*speed-n.z*1.2;
+    this.vel.y-=PLAYER.gravity*.22*dt;if(this.vel.y<-2.5)this.vel.y=-2.5;
+    this.facing=Math.atan2(tangent.x,tangent.z);
+    // Pulling away from the wall or losing contact ends the run.
+    if(Vector3.Dot(dir,n)>.6||!wallContact(this.pos,this.plan.solids))this.wallRun=0;
+    if(this.wallRun<=0)this.wallCooldown=.25;
+    if(Math.random()<.5)this.burst(this.pos.add(new Vector3(0,.9,0)).subtract(n.scale(.3)),new Color3(.8,1,.3),1,1.5);
+  }
+
+  // ------------------------------------------------------------------- boss
+  spawnBoss(){
+    const b=this.plan.boss,root=new TransformNode("warden",this.scene);root.position.set(b.x,b.y,b.z);
+    this.bossParts=this.builder.build("warden",root);root.setEnabled(false);
+    root.getChildMeshes().forEach(m=>this.shadow.addShadowCaster(m));
+    this.bossBaseY=b.y;
+    this.boss={root,hp:b.hp,maxHp:b.hp,elite:true,anchor:new Vector3(b.x,b.y,b.z),vel:new Vector3(),cooldown:0,charge:0,
+      alive:true,flash:0,phase:0,aggro:true,radius:2.4,boss:true};
+  }
+  awakenBoss(){
+    if(!this.boss)return;
+    this.bossState="active";this.boss.root.setEnabled(true);this.bossAttack=3;
+    this.boss.root.position.y=this.bossBaseY+12;
+    this.shake=.6;this.synth.tone(55,1.2,.08,"sawtooth",.5);this.synth.noise(1,.06,600);
+    this.cb.onMessage("THE WARDEN HAS AWAKENED","warn");
+  }
+  hitBoss(dmg:number,from:Vector3){
+    const b=this.boss!;if(!b.alive||this.bossState!=="active")return;
+    const mult=this.bossStagger>0?1.5:1;b.hp-=dmg*mult;b.flash=.12;this.hitStop=.06;this.shake=Math.max(this.shake,.25);
+    this.burst(from.add(b.root.position).scale(.5),new Color3(1,.4,.2),9,8);this.synth.tone(120,.12,.06,"square",.5);
+    const now=this.time;this.bossDamageWindow.push(now);this.bossDamageWindow=this.bossDamageWindow.filter(t=>now-t<4);
+    if(this.bossStagger<=0&&this.bossDamageWindow.length>=6){
+      this.bossStagger=3.2;this.bossDamageWindow=[];this.cb.onMessage("WARDEN STAGGERED — STRIKE!","strike");this.synth.tone(300,.3,.04,"triangle",.4);
+    }
+    if(b.hp<=0){
+      b.alive=false;this.bossState="defeated";this.hitStop=.45;this.shake=1;this.score+=1500;
+      for(let k=0;k<4;k++)this.burst(b.root.position.add(new Vector3((Math.random()-.5)*2,(Math.random()-.5)*2,(Math.random()-.5)*2)),k%2?new Color3(1,.2,.5):new Color3(.2,1,1),20,13);
+      b.root.setEnabled(false);this.rain.forEach(r=>r.mesh.dispose());this.rain=[];this.shock?.mesh.dispose();this.shock=null;
+      for(const d of this.drones)if(d.minion&&d.alive){d.alive=false;d.root.setEnabled(false)}
+      this.synth.noise(1.2,.1,900);this.synth.tone(45,1.4,.08,"sawtooth",.3);
+      this.cb.onMessage("WARDEN DESTROYED","strike");this.checkObjectives();
+    }
+  }
+  spawnMinion(at:Vector3){
+    const root=new TransformNode("minion",this.scene);root.position.copyFrom(at);
+    const parts=this.builder.build("drone",root);
+    for(const name of ["targetInner","targetOuter","slashLeft","slashRight"])parts.get(name)?.setEnabled(false);
+    const ring=parts.get("targetInner")!,ringMat=this.builder.material("magenta").clone("minionRing") as StandardMaterial;ring.material=ringMat;
+    root.scaling.setAll(.8);
+    this.drones.push({root,hp:2,maxHp:2,elite:false,anchor:at.clone(),vel:new Vector3(),cooldown:2.5,charge:0,alive:true,flash:0,
+      phase:Math.random()*6,ring,ringMat,aggro:true,radius:1,minion:true});
+    this.burst(at,new Color3(1,.3,.7),12,7);
+  }
+  groundBelow(x:number,z:number,from:number){
+    let y=-60;for(const b of this.plan.solids)if(x>b.min[0]&&x<b.max[0]&&z>b.min[2]&&z<b.max[2]&&b.max[1]<=from+.01&&b.max[1]>y)y=b.max[1];return y;
+  }
+  updateBoss(dt:number){
+    const b=this.boss;if(!b||this.bossState!=="active")return;
+    const frac=b.hp/b.maxHp,phase=frac>.66?1:frac>.33?2:3;
+    const toPlayer=this.pos.add(new Vector3(0,1.2,0)).subtract(b.root.position);
+    this.bossStagger=Math.max(0,this.bossStagger-dt);
+    // Hover in a slow orbit over the summit; sink low while staggered.
+    b.phase+=dt*(phase===3?.55:.35);
+    const target=b.anchor.add(new Vector3(Math.cos(b.phase)*3.2,0,Math.sin(b.phase)*3.2));
+    target.y=this.bossStagger>0?this.bossBaseY-2.6:this.bossBaseY+Math.sin(this.time*1.4)*.4;
+    b.root.position.addInPlace(target.subtract(b.root.position).scale(Math.min(1,dt*(this.bossStagger>0?3:1.6))));
+    b.root.rotation.y=Math.atan2(toPlayer.x,toPlayer.z);b.root.rotation.z=this.bossStagger>0?Math.sin(this.time*9)*.12:0;
+    for(let k=0;k<3;k++){const ring=this.bossParts.get(`wardenRing${k}`);if(ring)ring.rotation.y+=dt*(1.2+k*.7)*(k%2?-1:1)*(phase===3?2:1)}
+    const eye=this.bossParts.get("wardenEye");if(eye)eye.scaling.setAll(1+Math.sin(this.time*(phase===3?14:6))*.12);
+    if(b.flash>0){b.flash-=dt;b.root.scaling.setAll(1+b.flash*.6)}else b.root.scaling.setAll(1);
+    if(phase>=2&&!this.minionsSummoned){
+      this.minionsSummoned=true;this.cb.onMessage("WARDEN DEPLOYS SENTRIES","warn");
+      for(const s of [-1,1])this.spawnMinion(b.root.position.add(new Vector3(s*3.5,1,0)));
+    }
+    if(this.bossStagger>0)return;
+    this.bossAttack-=dt;
+    if(this.bossAttack<=0){
+      const pick=phase===1?0:phase===2?(Math.random()<.55?1:0):[0,1,2][Math.floor(Math.random()*3)];
+      if(pick===0){
+        // Fan volley from the cannons.
+        const shots=phase===3?7:5,base=Math.atan2(toPlayer.x,toPlayer.z),pitch=Math.atan2(toPlayer.y,Math.hypot(toPlayer.x,toPlayer.z));
+        for(let i=0;i<shots;i++){
+          const a=base+(i-(shots-1)/2)*.16,dir=new Vector3(Math.sin(a)*Math.cos(pitch),Math.sin(pitch),Math.cos(a)*Math.cos(pitch));
+          const mesh=MeshBuilder.CreateSphere("wardenBolt",{diameter:.42,segments:8},this.scene);
+          mesh.material=this.builder.material("red");mesh.position.copyFrom(b.root.position.add(dir.scale(1.6)));
+          this.bolts.push({mesh,vel:dir.scale(phase===3?20:17),ttl:3.2,damage:13});
+        }
+        this.synth.tone(180,.3,.04,"square",.5);this.bossAttack=phase===3?1.8:2.6;
+      }else if(pick===1){
+        // Plasma rain: telegraphed strikes around the player.
+        for(let i=0;i<(phase===3?6:4);i++){
+          const off=i===0?Vector3.Zero():new Vector3((Math.random()-.5)*7,0,(Math.random()-.5)*7);
+          const p=this.pos.add(off).add(new Vector3(this.vel.x*.4,0,this.vel.z*.4));p.y=this.groundBelow(p.x,p.z,this.pos.y+2)+.03;
+          if(p.y<-50)continue;
+          const mesh=MeshBuilder.CreateDisc("rainMark",{radius:1.6,tessellation:32},this.scene);
+          mesh.rotation.x=Math.PI/2;mesh.position.copyFrom(p);mesh.material=this.builder.material("red");mesh.visibility=.35;
+          this.rain.push({mesh,pos:p,t:1.15});
+        }
+        this.cb.onMessage("PLASMA RAIN — MOVE!","warn");this.synth.tone(700,.5,.02,"sine",.4);this.bossAttack=phase===3?2.2:3.1;
+      }else{
+        // Ground slam shockwave: jump over the ring.
+        const y=this.groundBelow(b.root.position.x,b.root.position.z,b.root.position.y);
+        const mesh=MeshBuilder.CreateTorus("shock",{diameter:1,thickness:.25,tessellation:64},this.scene);
+        mesh.material=this.builder.material("orange");mesh.position.set(b.root.position.x,y+.35,b.root.position.z);
+        this.shock?.mesh.dispose();this.shock={mesh,r:.5,y,hit:false};
+        this.shake=.5;this.synth.noise(.6,.08,500);this.cb.onMessage("SHOCKWAVE — JUMP!","warn");this.bossAttack=2.8;
+      }
+    }
+    for(let i=this.rain.length-1;i>=0;i--){
+      const r=this.rain[i];r.t-=dt;r.mesh.visibility=.25+.5*(1-r.t/1.15);r.mesh.scaling.setAll(1+Math.sin(this.time*20)*.03);
+      if(r.t<=0){
+        if(Math.hypot(this.pos.x-r.pos.x,this.pos.z-r.pos.z)<1.6&&Math.abs(this.pos.y-r.pos.y)<2.2)this.damagePlayer(16,r.pos);
+        this.burst(r.pos.add(new Vector3(0,.3,0)),new Color3(1,.25,.2),10,6);r.mesh.dispose();this.rain.splice(i,1);this.synth.noise(.2,.04,1200);
+      }
+    }
+    if(this.shock){
+      const s=this.shock;s.r+=dt*9;s.mesh.scaling.set(s.r*2,1,s.r*2);s.mesh.position.x=s.mesh.position.x;
+      const d=Math.hypot(this.pos.x-s.mesh.position.x,this.pos.z-s.mesh.position.z);
+      if(!s.hit&&Math.abs(d-s.r)<.7&&this.pos.y<s.y+.7){s.hit=true;this.damagePlayer(18,s.mesh.position);this.vel.y=6}
+      if(s.r>16){s.mesh.dispose();this.shock=null}
+    }
+  }
+
+  // ------------------------------------------------------------------ ghost
+  makeGhost(run:GhostRun){
+    this.ghost=run;
+    const rig=buildNinjaRig(this.scene,this.builder,"ghost");
+    const mat=new StandardMaterial("ghostMat",this.scene);mat.emissiveColor=new Color3(.25,.9,1);mat.diffuseColor=Color3.Black();
+    mat.disableLighting=true;mat.alpha=.32;mat.backFaceCulling=true;
+    for(const m of rig.root.getChildMeshes()){m.material=mat;m.isPickable=false}
+    rig.trails.forEach(t=>t.setEnabled(false));this.ghostRig=rig;
+  }
+  updateGhost(){
+    // Record this run at 10 Hz.
+    const due=this.time*10>=this.recording.length/GHOST_STRIDE;
+    if(due&&this.recording.length<GHOST_STRIDE*6000)this.recording.push(+this.time.toFixed(2),+this.pos.x.toFixed(2),+this.pos.y.toFixed(2),+this.pos.z.toFixed(2),
+      +this.facing.toFixed(3),this.poseId,+this.poseA.toFixed(3),+this.poseB.toFixed(2));
+    const g=this.ghost,rig=this.ghostRig;if(!g||!rig)return;
+    const S=g.samples,n=S.length/GHOST_STRIDE;
+    while(this.ghostIndex<n-2&&S[(this.ghostIndex+1)*GHOST_STRIDE]<=this.time)this.ghostIndex++;
+    const i=this.ghostIndex*GHOST_STRIDE,j=Math.min(n-1,this.ghostIndex+1)*GHOST_STRIDE;
+    if(this.time>S[(n-1)*GHOST_STRIDE]+1.5){rig.root.setEnabled(false);return}
+    const span=Math.max(.001,S[j]-S[i]),t=Math.max(0,Math.min(1,(this.time-S[i])/span));
+    rig.root.position.set(S[i+1]+(S[j+1]-S[i+1])*t,S[i+2]+(S[j+2]-S[i+2])*t,S[i+3]+(S[j+3]-S[i+3])*t);
+    let df=S[j+4]-S[i+4];df=Math.atan2(Math.sin(df),Math.cos(df));rig.root.rotation.y=S[i+4]+df*t;
+    applyPose(rig,poseFor(S[i+5],S[i+6]+(S[j+6]-S[i+6])*(S[i+5]===S[j+5]?t:0),S[i+7],this.time),.35);
+  }
+
   updateCombat(dt:number){
     this.comboWindow=Math.max(0,this.comboWindow-dt);
     if(this.attackTimer>0){
@@ -411,10 +666,10 @@ export class OpenWorldEngine{
         const reach=2.9+this.up.blade*.35,dmg=(this.combo===2?2:1)+(this.up.blade>=3?1:0);
         const f=new Vector3(Math.sin(this.facing),0,Math.cos(this.facing)),chest=this.pos.add(new Vector3(0,1.2,0));
         let hit=false;
-        for(const d of this.drones){
+        for(const d of this.targets()){
           if(!d.alive)continue;
           const v=d.root.position.subtract(chest),flat=new Vector3(v.x,0,v.z),dist=flat.length();
-          if(dist>reach*(d.elite?1.25:1)||Math.abs(v.y)>2.6)continue;
+          if(dist>reach*d.radius||Math.abs(v.y)>(d.boss?3.6:2.6))continue;
           if(dist>.6&&Vector3.Dot(flat.normalize(),f)<.2)continue;
           this.hitDrone(d,dmg,chest);hit=true;
         }
@@ -427,7 +682,7 @@ export class OpenWorldEngine{
     const chest=this.pos.add(new Vector3(0,1.3,0));
     for(const d of this.drones){
       if(!d.alive)continue;
-      d.phase+=dt;const toPlayer=chest.subtract(d.root.position),dist=toPlayer.length();
+      d.phase+=dt;if(d.minion){d.anchor.copyFrom(this.boss?.root.position??d.anchor)}const toPlayer=chest.subtract(d.root.position),dist=toPlayer.length();
       if(dist<24)d.aggro=true;
       let goal:Vector3;
       if(d.aggro&&dist<45){
@@ -475,7 +730,7 @@ export class OpenWorldEngine{
           b.vel.scaleInPlace(-1.4);b.ttl=1.5;b.reflected=true;this.synth.tone(1200,.1,.03,"triangle");this.cb.onMessage("DEFLECT!","good");this.score+=40;
         }else{this.damagePlayer(b.damage,b.mesh.position);dead=true}
       }
-      if(!dead&&b.reflected)for(const d of this.drones)if(d.alive&&Vector3.Distance(d.root.position,b.mesh.position)<1){this.hitDrone(d,2,b.mesh.position);dead=true;break}
+      if(!dead&&b.reflected)for(const d of this.targets())if(d.alive&&Vector3.Distance(d.root.position,b.mesh.position)<d.radius){this.hitDrone(d,d.boss?3:2,b.mesh.position);dead=true;break}
       if(!dead&&this.plan.solids.some(s=>{const p=b.mesh.position;return p.x>s.min[0]&&p.x<s.max[0]&&p.y>s.min[1]&&p.y<s.max[1]&&p.z>s.min[2]&&p.z<s.max[2]}))dead=true;
       if(dead){this.burst(b.mesh.position,new Color3(1,.5,.2),5,4);b.mesh.dispose();this.bolts.splice(i,1)}
     }
@@ -484,7 +739,7 @@ export class OpenWorldEngine{
       if(s.target?.alive){const want=s.target.root.position.subtract(s.mesh.position).normalize().scale(38);s.vel.addInPlace(want.subtract(s.vel).scale(Math.min(1,dt*7)))}
       s.mesh.position.addInPlace(s.vel.scale(dt));s.mesh.rotation.y+=dt*30;
       let dead=s.ttl<=0;
-      for(const d of this.drones)if(!dead&&d.alive&&Vector3.Distance(d.root.position,s.mesh.position)<(d.elite?1.5:1.1)){this.hitDrone(d,1,s.mesh.position);dead=true}
+      for(const d of this.targets())if(!dead&&d.alive&&Vector3.Distance(d.root.position,s.mesh.position)<d.radius*1.15){this.hitDrone(d,1,s.mesh.position);dead=true}
       if(!dead&&this.plan.solids.some(b=>{const p=s.mesh.position;return p.x>b.min[0]&&p.x<b.max[0]&&p.y>b.min[1]&&p.y<b.max[1]&&p.z>b.min[2]&&p.z<b.max[2]}))dead=true;
       if(dead){s.mesh.dispose();this.stars.splice(i,1)}
     }
@@ -512,21 +767,26 @@ export class OpenWorldEngine{
     const rig=this.rig;rig.root.position.copyFrom(this.pos);
     rig.root.rotation.y=this.facing;
     const flat=Math.hypot(this.vel.x,this.vel.z);
-    let pose;
-    if(this.hurtTimer>0)pose=hurtPose();
-    else if(this.dashTimer>0)pose=dashPose();
-    else if(this.attackTimer>0)pose=strikePose(1-this.attackTimer/this.attackLength,this.combo);
-    else if(!this.grounded)pose=airPose(this.vel.y,0);
-    else if(flat>.6){this.runClock+=dt*(5+flat*.75);pose=runPose(this.runClock,Math.min(1,flat/PLAYER.sprint+.3))}
-    else pose=idlePose(this.time);
-    applyPose(rig,pose,Math.min(1,dt*(this.attackTimer>0?22:13)));
+    // Pick a pose id + parameters; the same triple drives ghost playback.
+    let id:number=POSE_IDS.idle,a=0,b=0;
+    if(this.hurtTimer>0)id=POSE_IDS.hurt;
+    else if(this.dashTimer>0)id=POSE_IDS.dash;
+    else if(this.attackTimer>0){id=POSE_IDS.strike;a=1-this.attackTimer/this.attackLength;b=this.combo}
+    else if(this.wallRun>0){this.runClock+=dt*(5+flat*.8);id=POSE_IDS.wallrun;a=this.runClock;b=this.wallSide}
+    else if(!this.grounded){id=POSE_IDS.air;a=this.vel.y}
+    else if(flat>.6){this.runClock+=dt*(5+flat*.75);id=POSE_IDS.run;a=this.runClock;b=Math.min(1,flat/PLAYER.sprint+.3)}
+    this.poseId=id;this.poseA=a;this.poseB=b;
+    applyPose(rig,poseFor(id,a,b,this.time),Math.min(1,dt*(this.attackTimer>0?22:13)));
+    rig.root.rotation.z=this.wallRun>0?-this.wallSide*.28:rig.root.rotation.z*.8;
     // Double-jump somersault.
     if(this.flip>0&&!this.grounded){this.flip=Math.max(0,this.flip-dt*2.6);rig.joints.hips.rotation.x+=(1-this.flip)*Math.PI*2}
     rig.trails.forEach(t=>t.setEnabled(this.attackTimer>0&&this.attackTimer<this.attackLength*.75));
     rig.root.getChildMeshes().forEach(m=>{m.visibility=this.invuln>0&&this.hurtTimer<=0&&Math.floor(this.time*20)%2?.45:1});
   }
   updateCamera(dt:number){
-    const target=this.pos.add(new Vector3(0,1.55,0));
+    // Frame the Warden: lift the look target while it is close.
+    const bossLift=this.boss&&this.bossState==="active"?Math.max(0,1.4-Vector3.Distance(this.pos,this.boss.root.position)/18):0;
+    const target=this.pos.add(new Vector3(0,1.55+bossLift,0));
     const back=new Vector3(-Math.sin(this.camYaw)*Math.cos(this.camPitch),Math.sin(this.camPitch),-Math.cos(this.camYaw)*Math.cos(this.camPitch));
     const speed=Math.hypot(this.vel.x,this.vel.z);
     const want=this.camDist+Math.min(1.6,speed*.08);
@@ -550,10 +810,13 @@ export class OpenWorldEngine{
     const radar:{x:number;z:number;k:string}[]=[];const cy=Math.cos(-this.camYaw),sy=Math.sin(-this.camYaw);
     const add=(p:Vector3,k:string)=>{const dx=p.x-this.pos.x,dz=p.z-this.pos.z,d=Math.hypot(dx,dz);if(d>70)return;radar.push({x:(dx*cy+dz*sy)/70,z:(-dx*sy+dz*cy)/70,k})};
     for(const d of this.drones)if(d.alive)add(d.root.position,d.elite?"elite":"drone");
+    if(this.boss&&this.bossState==="active")add(this.boss.root.position,"boss");
     for(const p of this.pickups)if(!p.taken)add(p.pos,p.kind);
     add(this.beaconRoot.position,this.beaconActive?"beacon-on":"beacon");
     this.cb.onHud({health:Math.round(this.health),shards:this.shardsTaken,shardsTotal:this.plan.shards.length,
-      drones:this.dronesDown,dronesTotal:this.drones.length,time:this.time,par:this.sector.par,score:this.score,
+      drones:this.dronesDown,dronesTotal:this.droneTotal,
+      boss:this.boss&&this.bossState==="active"?{hp:Math.max(0,this.boss.hp/this.boss.maxHp),stagger:this.bossStagger>0}:null,
+      wallRun:this.wallRun>0,ghost:!!this.ghostRig,time:this.time,par:this.sector.par,score:this.score,
       stars:this.starCharges,starRegen:Math.min(1,this.starRegen/2.2),dash:1-this.dashCooldown/PLAYER.dashCooldown,
       beacon:this.beaconActive,marker,lock:lock&&!lock.behind?lock:null,lockHp:this.lockTarget?this.lockTarget.hp/this.lockTarget.maxHp:0,
       radar,combo:this.combo,locked:this.pointerLocked,altitude:Math.round(this.pos.y)});
@@ -562,6 +825,8 @@ export class OpenWorldEngine{
     const t=this.time,stars=t<=this.sector.par&&this.health>=60&&this.falls===0?3:(t<=this.sector.par*1.5||this.health>=35)?2:1;
     const timeBonus=Math.max(0,Math.round((this.sector.par-t)*4));
     return {time:t,health:Math.round(this.health),drones:this.dronesDown,shards:this.shardsTaken,falls:this.falls,
+      sector:this.sector.id,wallRuns:this.wallRuns,ghostTime:this.ghost?this.ghost.time:null,
+      ghostRun:{sector:this.sector.id,time:+t.toFixed(2),samples:this.recording} as GhostRun,
       score:this.score+timeBonus+Math.round(this.health*5),stars,credits:this.sector.reward+Math.round(this.sector.reward*.25*(stars-1))};
   }
   complete(){

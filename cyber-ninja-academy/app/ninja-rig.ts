@@ -140,6 +140,14 @@ export function strikePose(p:number,variant:number):Pose{
     leftUpperArm:[-.5,0,-.4],leftForeArm:[-1.3,0,0],scarf:[.6,.5-1.0*ease,0]};
 }
 
+/** Wall-run: sprint stride leaning away from the wall (side = +1 wall on right). */
+export function wallRunPose(phase:number,side:number):Pose{
+  const r=runPose(phase,1.1),lean=-side*.32;
+  return {...r,spine:[.1,0,lean*.6],chest:[.12,-.15*side,lean*.5],neck:[-.1,.2*side,-lean*.4],
+    leftUpperArm:side>0?[-.4,0,-1.1]:[.6*Math.sin(phase),0,-.3],rightUpperArm:side<0?[-.4,0,1.1]:[-.5,0,.3],
+    scarf:[1.0,-side*.4,0]};
+}
+
 export function hurtPose():Pose{
   return {hipDrop:.12,spine:[-.35,0,.12],chest:[-.25,0,0],neck:[.3,0,0],
     leftThigh:[-.4,0,0],leftShin:[.6,0,0],rightThigh:[.2,0,0],rightShin:[.4,0,0],
@@ -150,5 +158,5 @@ export function hurtPose():Pose{
 /** Named poses for the printed articulation plate. */
 export const POSE_SHEET:Record<string,Pose>={
   stance:idlePose(0),run:runPose(Math.PI/2),jump:airPose(6),slide:slidePose(0),
-  strike:strikePose(.48,0),finisher:strikePose(.5,2),dash:dashPose(),
+  strike:strikePose(.48,0),finisher:strikePose(.5,2),dash:dashPose(),wallrun:wallRunPose(Math.PI/2,1),
 };

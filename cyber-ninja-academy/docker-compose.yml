@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: cyber-ninja-academy:4.0.0
+    image: cyber-ninja-academy:4.1.0
     container_name: cyber-ninja-academy
     restart: unless-stopped
     ports:
@@ -11,6 +11,10 @@ services:
     environment:
       NODE_ENV: production
       WRANGLER_LOG_PATH: /tmp/wrangler.log
+      LEADERBOARD_DIR: /game/data
+    volumes:
+      # Leaderboard scores persist here across upgrades and rollbacks.
+      - cyber-ninja-leaderboard:/game/data
     read_only: true
     cap_drop:
       - ALL
@@ -25,3 +29,7 @@ services:
       timeout: 5s
       retries: 6
       start_period: 30s
+
+volumes:
+  cyber-ninja-leaderboard:
+    name: cyber-ninja-leaderboard

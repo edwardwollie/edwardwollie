@@ -7,12 +7,13 @@ import {NullEngine,Scene,Vector3} from '@babylonjs/core';
 
 fs.mkdirSync(new URL('../tmp/',import.meta.url),{recursive:true});
 const out=new URL(`../tmp/open-world-tests-${process.pid}/`,import.meta.url);
-await build({entryPoints:['city-plan.ts','open-world.ts','ninja-rig.ts','blueprint-mesh.ts'].map(f=>new URL(`../app/${f}`,import.meta.url).pathname),
+await build({entryPoints:['city-plan.ts','open-world.ts','ninja-rig.ts','blueprint-mesh.ts','leaderboard-store.ts'].map(f=>new URL(`../app/${f}`,import.meta.url).pathname),
   outdir:out.pathname,bundle:true,packages:'external',platform:'node',format:'esm',logLevel:'silent'});
 const {planCity,SECTORS,DOUBLE_JUMP_RISE}=await import(pathToFileURL(`${out.pathname}city-plan.js`).href);
-const {moveBody,rayBoxes,PLAYER}=await import(pathToFileURL(`${out.pathname}open-world.js`).href);
+const {moveBody,rayBoxes,wallContact,poseFor,PLAYER}=await import(pathToFileURL(`${out.pathname}open-world.js`).href);
 const {buildNinjaRig,applyPose,POSE_SHEET,runPose,strikePose}=await import(pathToFileURL(`${out.pathname}ninja-rig.js`).href);
 const {BlueprintBuilder}=await import(pathToFileURL(`${out.pathname}blueprint-mesh.js`).href);
+const {validate,insert,cleanName,MIN_TIME}=await import(pathToFileURL(`${out.pathname}leaderboard-store.js`).href);
 
 const inside=(p,b,pad=0)=>p.x>b.min[0]-pad&&p.x<b.max[0]+pad&&p.y>b.min[1]&&p.y<b.max[1]&&p.z>b.min[2]-pad&&p.z<b.max[2]+pad;
 
@@ -71,4 +72,49 @@ test('rig poses move joints within anatomical limits',()=>{
     for(const j of ['leftForeArm','rightForeArm'])assert.ok(rig.current[j].x<=.4,`${name}: ${j} elbow bends forward`);
   }
   scene.dispose();engine.dispose();
+});
+
+test('each sector has a Warden over the summit and wall-run billboards',()=>{
+  for(const sector of SECTORS){
+    const a=planCity(sector);
+    assert.ok(Math.hypot(a.boss.x-a.beacon.x,a.boss.z-a.beacon.z)<1e-6,'boss guards the beacon');
+    assert.ok(a.boss.y>a.beacon.y+2,'boss hovers above the summit');
+    assert.ok(a.boss.hp>=24);
+    assert.ok(a.walls.length>=1,`${sector.name} has billboards`);
+    for(const w of a.walls){assert.ok(w.max[1]-w.min[1]>3,'billboard is tall enough to run on');assert.ok(a.solids.includes(w))}
+  }
+  assert.ok(planCity(SECTORS[3]).boss.hp>planCity(SECTORS[0]).boss.hp,'later Wardens are tougher');
+});
+
+test('wall contact finds the face beside the operative and its outward normal',()=>{
+  const wall={min:[0,0,0],max:[8,5,.4],kind:'wall'};
+  const n=wallContact(new Vector3(4,1,.4+PLAYER.radius+.05),[wall]);
+  assert.ok(n&&n.z===1,'normal points away from the wall');
+  assert.equal(wallContact(new Vector3(4,1,3),[wall]),null,'too far away');
+  assert.equal(wallContact(new Vector3(4,6,.8),[wall]),null,'above the wall');
+  const lip={min:[0,0,0],max:[8,.3,.4],kind:'lip'};
+  assert.equal(wallContact(new Vector3(4,0,.8),[lip]),null,'low lips are not walls');
+});
+
+test('ghost pose ids rebuild every recorded pose',()=>{
+  for(const [id,a,b] of [[0,0,0],[1,2,1],[2,4,0],[3,.5,2],[4,0,0],[6,1.2,-1],[7,0,0]]){
+    const pose=poseFor(id,a,b,1);assert.ok(pose&&typeof pose==='object');
+    assert.ok(Object.keys(pose).length>3,`pose ${id} has joints`);
+  }
+});
+
+test('leaderboard validates runs and keeps each callsign\'s best time',()=>{
+  assert.equal(cleanName(' sh<a>dow  01 '),'SHADOW 01');
+  assert.equal(cleanName('x'),null);
+  assert.equal(typeof validate({sector:1,name:'KAGE',time:MIN_TIME[1]-1,health:50,stars:2,score:10}),'string','too fast is rejected');
+  assert.equal(typeof validate({sector:9,name:'KAGE',time:100,health:50,stars:2,score:10}),'string');
+  assert.equal(typeof validate({sector:1,name:'KAGE',time:100,health:150,stars:2,score:10}),'string');
+  const ok=validate({sector:1,name:'kage',time:100.123,health:50,stars:2,score:10,falls:0});
+  assert.equal(typeof ok,'object');assert.equal(ok.entry.name,'KAGE');assert.equal(ok.entry.time,100.12);
+  const board={};
+  assert.equal(insert(board,1,{...ok.entry}).rank,1);
+  assert.equal(insert(board,1,{...ok.entry,name:'ZERO',time:90}).rank,1);
+  assert.equal(insert(board,1,{...ok.entry,time:120}).best.time,100.12,'slower repeat keeps the best');
+  assert.equal(insert(board,1,{...ok.entry,time:80}).rank,1,'faster repeat replaces it');
+  assert.equal(board['1'].length,2);
 });
