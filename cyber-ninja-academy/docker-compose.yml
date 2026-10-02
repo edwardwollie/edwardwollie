@@ -1,0 +1,27 @@
+services:
+  cyber-ninja-academy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cyber-ninja-academy:4.0.0
+    container_name: cyber-ninja-academy
+    restart: unless-stopped
+    ports:
+      - "${CYBER_NINJA_PORT:-8099}:3000"
+    environment:
+      NODE_ENV: production
+      WRANGLER_LOG_PATH: /tmp/wrangler.log
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+      - /game/.wrangler:rw,noexec,nosuid,size=16m
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/healthz | grep -q cyber-ninja-ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s

@@ -1,0 +1,16 @@
+{
+  "title": "Cyber Ninja Academy",
+  "shortTitle": "Cyber Ninja",
+  "description": "Free-roam a neon rooftop city in full 3D as a realistic cyber-ninja operative: sprint, double-jump, phase-dash and chain katana strikes against hunter drones, or run the 12 classic survival trials.",
+  "category": "Action",
+  "tagline": "Roam. Strike. Ascend.",
+  "accent": "#27efff",
+  "accent2": "#ff42a7",
+  "initials": "CN",
+  "coverImage": "https://ninja.flexzonicgames.com/og.png",
+  "featured": true,
+  "order": 31,
+  "name": "Cyber Ninja Academy",
+  "version": "4.0.0",
+  "url": "https://ninja.flexzonicgames.com"
+}

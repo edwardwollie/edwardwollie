@@ -1,0 +1,16 @@
+{
+  "name": "Cyber Ninja Academy — Blueprint 3.0",
+  "short_name": "Cyber Ninja",
+  "start_url": "/",
+  "display": "fullscreen",
+  "background_color": "#050713",
+  "theme_color": "#27efff",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

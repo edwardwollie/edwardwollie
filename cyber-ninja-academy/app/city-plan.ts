@@ -1,0 +1,120 @@
+/**
+ * Deterministic layout for the open-city operations. Pure data so it can be
+ * tested without a renderer: rooftops, props, bridges, jump pads, pickups,
+ * drone anchors and the extraction beacon.
+ */
+export type Box = {min:[number,number,number];max:[number,number,number];kind:"roof"|"prop"|"bridge"|"lip"};
+export type Roof = {i:number;j:number;x:number;z:number;w:number;d:number;h:number;box:Box};
+export type Sector = {id:number;name:string;zone:string;grid:number;shards:number;drones:number;elite:number;reward:number;par:number;color:string;seed:number};
+export type CityPlan = {
+  roofs:Roof[];solids:Box[];pads:{x:number;y:number;z:number;dx:number;dz:number}[];
+  shards:{x:number;y:number;z:number}[];repairs:{x:number;y:number;z:number}[];
+  drones:{x:number;y:number;z:number;elite:boolean}[];
+  spawn:{x:number;y:number;z:number;yaw:number};beacon:{x:number;y:number;z:number};
+  bounds:{min:number;max:number};
+};
+
+export const SECTORS:Sector[]=[
+  {id:1,name:"Neon Sprawl",zone:"Academy District",grid:4,shards:6,drones:4,elite:0,reward:260,par:240,color:"#27efff",seed:7101},
+  {id:2,name:"Circuit Heights",zone:"Circuit Ward",grid:5,shards:8,drones:7,elite:1,reward:420,par:320,color:"#a970ff",seed:7202},
+  {id:3,name:"Ember Spire",zone:"Ember Spire",grid:5,shards:10,drones:10,elite:2,reward:600,par:400,color:"#ff435f",seed:7303},
+  {id:4,name:"Void Crown",zone:"Void Crown",grid:6,shards:12,drones:14,elite:3,reward:900,par:480,color:"#cfff45",seed:7404},
+];
+
+export const CELL=22;
+/** Height a double jump reliably clears; larger rises get a jump pad. */
+export const DOUBLE_JUMP_RISE=2.4;
+
+function seeded(seed:number){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/0x100000000}}
+const box=(min:[number,number,number],max:[number,number,number],kind:Box["kind"]):Box=>({min,max,kind});
+
+export function planCity(sector:Sector):CityPlan{
+  const rnd=seeded(sector.seed),n=sector.grid,roofs:Roof[]=[],solids:Box[]=[];
+  const at=(i:number,j:number)=>roofs[i*n+j];
+  // Heights rise toward the far corner so the beacon sits on a summit.
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+    const w=12.5+rnd()*4.5,d=12.5+rnd()*4.5;
+    const x=i*CELL+(rnd()-.5)*2,z=j*CELL+(rnd()-.5)*2;
+    const climb=(i+j)/(2*(n-1));
+    const h=i===0&&j===0?0:Math.round((climb*sector.grid*1.9+(rnd()-.5)*3.2)*2)/2;
+    const roof={i,j,x,z,w,d,h:Math.max(0,h),box:box([x-w/2,-60,z-d/2],[x+w/2,Math.max(0,h),z+d/2],"roof")};
+    roofs.push(roof);solids.push(roof.box);
+  }
+  // Spanning tree over the grid guarantees every roof is reachable.
+  const pads:CityPlan["pads"]=[];
+  const linked=new Set<string>(["0,0"]),edges:[Roof,Roof][]=[];
+  const frontier:[Roof,Roof][]=[[at(0,0),at(1,0)],[at(0,0),at(0,1)]];
+  while(linked.size<n*n&&frontier.length){
+    const k=Math.floor(rnd()*frontier.length),[a,b]=frontier.splice(k,1)[0];
+    if(linked.has(`${b.i},${b.j}`))continue;
+    linked.add(`${b.i},${b.j}`);edges.push([a,b]);
+    for(const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      const ni=b.i+di,nj=b.j+dj;
+      if(ni>=0&&nj>=0&&ni<n&&nj<n&&!linked.has(`${ni},${nj}`))frontier.push([b,at(ni,nj)]);
+    }
+  }
+  for(const [a,b] of edges){
+    const low=a.h<=b.h?a:b,high=low===a?b:a;
+    const horizontal=a.i!==b.i;
+    // Bridge at the lower roof's height spanning the gap.
+    const y=low.h;
+    if(horizontal){
+      const x0=Math.min(a.x,b.x)+(a.x<b.x?a.w:b.w)/2-0.4,x1=Math.max(a.x,b.x)-(a.x<b.x?b.w:a.w)/2+0.4;
+      const zc=(a.z+b.z)/2;solids.push(box([x0,y-.35,zc-1.1],[x1,y,zc+1.1],"bridge"));
+    }else{
+      const z0=Math.min(a.z,b.z)+(a.z<b.z?a.d:b.d)/2-0.4,z1=Math.max(a.z,b.z)-(a.z<b.z?b.d:a.d)/2+0.4;
+      const xc=(a.x+b.x)/2;solids.push(box([xc-1.1,y-.35,z0],[xc+1.1,y,z1],"bridge"));
+    }
+    if(high.h-low.h>DOUBLE_JUMP_RISE){
+      // Pad on the lower roof, a few metres back from the shared edge.
+      const dx=Math.sign(high.x-low.x)*(horizontal?1:0),dz=Math.sign(high.z-low.z)*(horizontal?0:1);
+      pads.push({x:low.x+dx*(low.w/2-3.2),y:low.h,z:low.z+dz*(low.d/2-3.2),dx,dz});
+    }
+  }
+  // Props: vents, server stacks and cover walls. Kept clear of pads and the
+  // centre of each roof so landings stay readable.
+  const propTops:{x:number;y:number;z:number}[]=[];
+  for(const r of roofs){
+    const count=2+Math.floor(rnd()*3);
+    for(let k=0;k<count;k++){
+      const pw=1.2+rnd()*2.2,pd=1.2+rnd()*2.2,ph=[.9,1.3,1.8,2.2][Math.floor(rnd()*4)];
+      const px=r.x+(rnd()<.5?-1:1)*(1.8+rnd()*(r.w/2-3.6)),pz=r.z+(rnd()<.5?-1:1)*(1.8+rnd()*(r.d/2-3.6));
+      if(pads.some(p=>Math.hypot(p.x-px,p.z-pz)<3.4))continue;
+      if(r.i===0&&r.j===0&&Math.hypot(px-r.x,pz-r.z)<3)continue;
+      if(r.i===n-1&&r.j===n-1&&Math.hypot(px-r.x,pz-r.z)<4.5)continue;
+      solids.push(box([px-pw/2,r.h,pz-pd/2],[px+pw/2,r.h+ph,pz+pd/2],"prop"));
+      propTops.push({x:px,y:r.h+ph,z:pz});
+    }
+    // Low parapet lips on the two outer edges of perimeter roofs.
+    if(r.i===0)solids.push(box([r.x-r.w/2,r.h,r.z-r.d/2],[r.x-r.w/2+.35,r.h+.32,r.z+r.d/2],"lip"));
+    if(r.i===n-1)solids.push(box([r.x+r.w/2-.35,r.h,r.z-r.d/2],[r.x+r.w/2,r.h+.32,r.z+r.d/2],"lip"));
+    if(r.j===0)solids.push(box([r.x-r.w/2,r.h,r.z-r.d/2],[r.x+r.w/2,r.h+.32,r.z-r.d/2+.35],"lip"));
+    if(r.j===n-1)solids.push(box([r.x-r.w/2,r.h,r.z+r.d/2-.35],[r.x+r.w/2,r.h+.32,r.z+r.d/2],"lip"));
+  }
+  const order=[...roofs].sort((a,b)=>(a.i+a.j)-(b.i+b.j)||a.i-b.i);
+  const summit=order[order.length-1];
+  // Shards: spread over roofs, a third of them perched on props.
+  const shards:CityPlan["shards"]=[],pool=order.slice(1);
+  for(let k=0;k<sector.shards;k++){
+    const r=pool[Math.floor((k+.5)*pool.length/sector.shards)];
+    const onProp=k%3===2?propTops.find(p=>Math.abs(p.x-r.x)<r.w/2&&Math.abs(p.z-r.z)<r.d/2&&p.y-r.h<2):undefined;
+    if(onProp)shards.push({x:onProp.x,y:onProp.y+1.1,z:onProp.z});
+    else{
+      const x=r.x+(rnd()-.5)*(r.w-5),z=r.z+(rnd()-.5)*(r.d-5);
+      // A shard that lands inside a prop footprint is lifted onto its top.
+      const under=solids.find(b=>b.kind==="prop"&&x>b.min[0]-.4&&x<b.max[0]+.4&&z>b.min[2]-.4&&z<b.max[2]+.4);
+      shards.push({x,y:(under?under.max[1]:r.h)+1.2,z});
+    }
+  }
+  const drones:CityPlan["drones"]=[];
+  for(let k=0;k<sector.drones;k++){
+    const r=pool[Math.floor((k+.3)*pool.length/sector.drones)%pool.length];
+    drones.push({x:r.x+(rnd()-.5)*6,y:r.h+3.2+rnd()*1.6,z:r.z+(rnd()-.5)*6,elite:k>=sector.drones-sector.elite});
+  }
+  const repairs=[order[Math.floor(order.length*.35)],order[Math.floor(order.length*.7)]].map(r=>({x:r.x+r.w/2-2.2,y:r.h+.9,z:r.z-r.d/2+2.2}));
+  const start=at(0,0);
+  return {roofs,solids,pads,shards,repairs,drones,
+    spawn:{x:start.x,y:start.h,z:start.z,yaw:Math.PI/4},
+    beacon:{x:summit.x,y:summit.h,z:summit.z},
+    bounds:{min:-CELL,max:n*CELL}};
+}
