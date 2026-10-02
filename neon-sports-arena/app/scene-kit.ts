@@ -19,8 +19,8 @@ export function arenaScene(engine: AbstractEngine, theme: ArenaTheme, quality: Q
   scene.ambientColor = new Color3(.14, .15, .24);
   scene.skipPointerMovePicking = true;
   if (!isNull(engine)) {
-    const glow = new GlowLayer("neonGlow", scene, {blurKernelSize: quality === "high" ? 40 : 18, mainTextureRatio: quality === "high" ? .5 : .33});
-    glow.intensity = .72;
+    const glow = new GlowLayer("neonGlow", scene, {blurKernelSize: quality === "high" ? 28 : 16, mainTextureRatio: quality === "high" ? .5 : .33});
+    glow.intensity = .48;
   }
   return scene;
 }
@@ -47,7 +47,7 @@ export function postFx(scene: Scene, camera: Camera, theme: ArenaTheme, quality:
   if (isNull(scene.getEngine())) return null;
   const p = new DefaultRenderingPipeline("broadcast", true, scene, [camera]);
   p.fxaaEnabled = true;
-  p.bloomEnabled = true; p.bloomThreshold = .58; p.bloomWeight = quality === "high" ? .42 : .3; p.bloomKernel = quality === "high" ? 64 : 32; p.bloomScale = .5;
+  p.bloomEnabled = true; p.bloomThreshold = .7; p.bloomWeight = quality === "high" ? .42 : .3; p.bloomKernel = quality === "high" ? 64 : 32; p.bloomScale = .5;
   p.imageProcessingEnabled = true;
   const ip = p.imageProcessing;
   ip.toneMappingEnabled = true; ip.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;

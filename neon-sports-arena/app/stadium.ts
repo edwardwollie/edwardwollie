@@ -207,10 +207,10 @@ export class Stadium {
       const g = ground(-.08, "#000000"); (g.material as StandardMaterial).emissiveTexture = tex;
     }
     if (decor === "dome") {
-      const tex = gridTexture(512, "rgba(73,244,255,.5)", "rgba(0,0,0,0)", 32); tex.hasAlpha = true; tex.uScale = 6; tex.vScale = 3;
+      const tex = gridTexture(512, "rgba(73,244,255,.35)", "rgba(0,0,0,0)", 64); tex.hasAlpha = true; tex.uScale = 8; tex.vScale = 4;
       const dome = MeshBuilder.CreateSphere("trainingDome", {diameter: 130, segments: 32, slice: .5, sideOrientation: Mesh.BACKSIDE}, s);
       dome.parent = this.root; dome.position.y = -2;
-      const m = new StandardMaterial("domeMat", s); m.diffuseColor = Color3.Black(); m.emissiveTexture = tex; m.opacityTexture = tex; m.alpha = .55;
+      const m = new StandardMaterial("domeMat", s); m.diffuseColor = Color3.Black(); m.emissiveTexture = tex; m.opacityTexture = tex; m.alpha = .22;
       m.disableLighting = true; m.backFaceCulling = false; dome.material = m; dome.isPickable = false;
     }
     if (decor === "pulse" || decor === "halo") {
@@ -236,7 +236,7 @@ export class Stadium {
         const axis = Vector3.Cross(Vector3.Up(), dir.scale(-1)).normalize(), angle = Math.acos(Vector3.Dot(Vector3.Up(), dir.scale(-1)));
         cone.rotationQuaternion = Quaternion.RotationAxis(axis, angle);
         const m = new StandardMaterial("shaftMat", s); m.diffuseColor = Color3.Black(); m.emissiveColor = new Color3(.55, .68, .9);
-        m.alpha = .035; m.disableLighting = true; m.backFaceCulling = false; m.fogEnabled = false; cone.material = m; cone.isPickable = false;
+        m.alpha = .022; m.disableLighting = true; m.backFaceCulling = false; m.fogEnabled = false; cone.material = m; cone.isPickable = false;
       }
     }
   }

@@ -48,6 +48,7 @@ const ATHLETE_R = .45;
 const hex = (h: string) => Color3.FromHexString(h);
 const tintsOf = (team: TeamStyle): Tints => ({kitPrimary: team.accent, kitTrim: team.color});
 const yawTo = (from: V3, to: V3) => Math.atan2(to.x - from.x, to.z - from.z);
+const setV = (v: Vector3, o: V3) => v.set(o.x, o.y, o.z);
 const angleDiff = (a: number, b: number) => {let d = a - b; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d};
 
 export class ArenaEngine {
@@ -120,19 +121,21 @@ export class ArenaEngine {
   shadow: any;
 
   resize = () => this.engine.resize();
+  noGlow(mesh: Mesh) {for (const layer of this.scene.effectLayers) (layer as any).addExcludedMesh?.(mesh)}
   caster(m: Mesh) {this.shadow?.addShadowCaster(m, false)}
 
   // ---------------------------------------------------------------- setup
   createTeams() {
     const ringMat = (hexColor: string, alpha = .8) => {
-      const m = new StandardMaterial(`ring${hexColor}`, this.scene); m.diffuseColor = Color3.Black(); m.emissiveColor = hex(hexColor); m.alpha = alpha; m.disableLighting = true;
+      const m = new StandardMaterial(`ring${hexColor}`, this.scene); m.diffuseColor = Color3.Black(); m.emissiveColor = hex(hexColor).scale(.75); m.alpha = alpha; m.disableLighting = true;
       return m;
     };
     const make = (team: Team, role: Actor["role"], index: number, style: TeamStyle, speed: number): Actor => {
       const rig = buildAthlete(this.scene, this.builder, `${role}${index}`, tintsOf(style));
       rig.meshes.forEach(m => this.caster(m));
       const ring = MeshBuilder.CreateTorus(`${role}${index}-ring`, {diameter: 1.15, thickness: .06, tessellation: 40}, this.scene);
-      ring.material = ringMat(role === "player" ? "#d9ff4f" : style.color, role === "player" ? .95 : .45); ring.isPickable = false;
+      ring.material = ringMat(role === "player" ? "#d9ff4f" : style.color, role === "player" ? .9 : .5); ring.isPickable = false;
+      this.noGlow(ring);
       return {id: this.actors.length, team, role, rig, pos: new Vector3(), vel: new Vector3(), yaw: team === "home" ? 0 : Math.PI, maxSpeed: speed,
         stun: 0, contact: 0, tackleCd: 0, shootCd: 0, think: 0, target: new Vector3(), wantShot: 0, anim: "idle", animT: 0, phase: this.random() * 6,
         vy: 0, air: false, ring, telegraph: 0, lunge: 0, lungeDir: new Vector3(), boost: 0, pickupBlock: 0, job: "support"};
@@ -169,7 +172,7 @@ export class ArenaEngine {
       const s = this.stadium.structure("keeper_drone", side); if (!s) continue;
       const end = side === "rival" ? 1 : -1;
       this.keepers.push({node: s.node, side, x: 0, tx: 0, end: end as 1 | -1, lineZ: end * (HL - .9), flash: 0, dive: 0,
-        speed: side === "rival" ? 3.0 + this.mission.id * .1 : 4.2 + this.mission.id * .05});
+        speed: side === "rival" ? 2.6 + this.mission.id * .09 : 3.4 + this.mission.id * .04});
     }
   }
 
@@ -221,7 +224,7 @@ export class ArenaEngine {
     aura.material = am; aura.isPickable = false; aura.setEnabled(false); this.aura = aura;
     const aim = MeshBuilder.CreateBox("aimLine", {width: .07, height: .02, depth: 1}, this.scene);
     const im = new StandardMaterial("aimMat", this.scene); im.emissiveColor = hex("#d9ff4f"); im.diffuseColor = Color3.Black(); im.alpha = .55; im.disableLighting = true;
-    aim.material = im; aim.isPickable = false; aim.setEnabled(false); this.aimLine = aim;
+    aim.material = im; aim.isPickable = false; aim.setEnabled(false); this.aimLine = aim; this.noGlow(aim);
   }
 
   burst(at: V3, color: string, count = 60, power = 7, gravity = -9, size = .25) {
@@ -239,10 +242,10 @@ export class ArenaEngine {
       if (this.rings.length > 8) return;
       const mesh = MeshBuilder.CreateTorus("shockRing", {diameter: 1, thickness: .05, tessellation: 48}, this.scene);
       const m = new StandardMaterial("shockMat", this.scene); m.diffuseColor = Color3.Black(); m.disableLighting = true; mesh.material = m; mesh.isPickable = false;
-      slot = {mesh, t: 1}; this.rings.push(slot);
+      slot = {mesh, t: 1}; this.rings.push(slot); this.noGlow(mesh);
     }
     slot.t = 0; slot.mesh.position.set(at.x, Math.max(.05, at.y), at.z); slot.mesh.setEnabled(true);
-    (slot.mesh.material as StandardMaterial).emissiveColor = hex(color);
+    (slot.mesh.material as StandardMaterial).emissiveColor = hex(color).scale(.8);
     slot.mesh.metadata = size;
   }
 
@@ -338,7 +341,8 @@ export class ArenaEngine {
     if (!this.canAct()) return;
     if (this.mission.mode === "targets") {this.charging = true; this.chargeT = 0; return}
     if (this.carrier !== this.player) {
-      if (!this.carrier && dist2d(this.player.pos, this.ball.p) < 2.7 && this.ball.p.y < 2.2) {this.takeBall(this.player); this.message("SECURED", "good")}
+      // Grabbing a loose ball only collects it; a fresh press shoots.
+      if (!this.carrier && dist2d(this.player.pos, this.ball.p) < 2.7 && this.ball.p.y < 2.2) {this.takeBall(this.player); this.message("SECURED", "good"); return}
       else if (this.player.air && this.mission.mode === "hoops" && this.carrier === null) {this.message("GET THE ORB FIRST", "warn"); return}
       else {this.message(this.carrier?.team === "home" ? "PRESS F TO CALL FOR THE BALL" : "SECURE THE BALL · TACKLE THE CARRIER", "warn"); return}
     }
@@ -375,7 +379,7 @@ export class ArenaEngine {
       const spread = (1 - quality) * (.5 + d * .055);
       const to = new Vector3(aim.x + err() * spread, clamp(.55 + power * 1.7 + err() * spread * .6, .45, 3.3), aim.z + end * .6);
       const speed = (17 + 13 * power + (actor.role === "player" ? this.upgrades.power * 1.1 : this.mission.id * .1)) * (perfect ? 1.22 : 1);
-      this.ball.v.copyFrom(solveShot(from, to, speed).velocity as Vector3);
+      setV(this.ball.v, solveShot(from, to, speed).velocity);
       this.animate(actor, "kick"); this.synth.kick(power);
       this.burst(from, actor.team === "home" ? this.home.color : this.rivalTeam.color, perfect ? 70 : 28, 5);
     } else if (mode === "hoops") {
@@ -387,15 +391,16 @@ export class ArenaEngine {
       const spread = (.25 + d * .055) * (1.08 - quality) * pressure * powerBias;
       const sway = this.hoopSwayVelocity(actor.team === "home" ? "rival" : "home");
       const target = new Vector3(hoop.x + sway * t + err() * spread, hoop.y + err() * spread * .8, hoop.z);
-      this.ball.v.copyFrom(solveBallistic(from, target, t) as Vector3);
+      setV(this.ball.v, solveBallistic(from, target, t));
       this.animate(actor, "shoot"); this.synth.tone(520, .2, .03, "triangle", 1.8);
     } else {
       const mate = this.bestReceiver(actor, true);
       const dir = new Vector3(Math.sin(actor.yaw), 0, Math.cos(actor.yaw));
-      const goal = mate ? leadTarget(from, mate.pos, mate.vel, 14).target as Vector3 : from.add(dir.scale(8 + 14 * power));
+      const lead = mate ? leadTarget(from, mate.pos, mate.vel, 14).target : null;
+      const goal = lead ? new Vector3(lead.x, lead.y, lead.z) : from.add(dir.scale(8 + 14 * power));
       goal.x = clamp(goal.x, -HW + 1, HW - 1); goal.z = clamp(goal.z, -HL + 1, HL - 1); goal.y = this.ballR;
       const t = .55 + dist2d(from, goal) * .025;
-      this.ball.v.copyFrom(solveBallistic(from, goal, t) as Vector3);
+      setV(this.ball.v, solveBallistic(from, goal, t));
       if (mate) {this.passTarget = mate; this.lastPasser = actor; this.passTime = this.elapsed}
       this.animate(actor, "throw"); this.synth.tone(300, .15, .04, "triangle", 2);
     }
@@ -425,7 +430,7 @@ export class ArenaEngine {
     this.release(from);
     const lob = this.mission.mode !== "goal" || this.actors.some(a => a.team !== from.team && this.nearSegment(a.pos, start, target, 1.2));
     const t = lob ? .5 + dist2d(start, target) * .03 : Math.max(.15, dist2d(start, target) / speed);
-    this.ball.v.copyFrom(solveBallistic(start, target, t) as Vector3);
+    setV(this.ball.v, solveBallistic(start, target, t));
     this.passTarget = to; this.lastPasser = from; this.passTime = this.elapsed; from.pickupBlock = .35;
     this.animate(from, this.mission.mode === "capture" ? "throw" : this.mission.mode === "hoops" ? "shoot" : "kick");
     this.synth.kick(.35);
@@ -527,7 +532,7 @@ export class ArenaEngine {
     bolt.position.copyFrom(from);
     const damage = (18 + this.upgrades.power * 7) * (power > .75 ? 2.2 : 1) * (perfect ? 1.3 : 1);
     this.bolts.push({mesh: bolt, from, to: best.node.position.clone(), t: 0, target: best});
-    (bolt.metadata as any) = damage;
+    bolt.metadata = damage;
     if (perfect) {this.stats.perfects += 1; this.message("PERFECT CHARGE", "perfect")}
     this.synth.tone(perfect ? 1500 : 980, .16, .04, "square", .4);
   }
@@ -665,13 +670,18 @@ export class ArenaEngine {
   // ---------------------------------------------------------------- per-frame
   update() {
     const now = performance.now();
-    let dt = Math.min(.05, (now - this.last) / 1000);
+    const dt = Math.min(.05, (now - this.last) / 1000);
     this.last = now;
     this.pollGamepad();
-    if (this.paused) {this.scene.render(); return}
-    this.slowmo += (1 - this.slowmo) * Math.min(1, dt * 1.6);
+    if (!this.paused) this.tick(dt);
+    this.scene.render();
+  }
+
+  /** One simulation + presentation step (no rendering); also used by the test bot. */
+  tick(raw: number) {
+    this.slowmo += (1 - this.slowmo) * Math.min(1, raw * 1.6);
     if (this.phase === "goal" && this.phaseT < .5) this.slowmo = Math.min(this.slowmo, .35);
-    dt *= this.slowmo;
+    const dt = raw * this.slowmo;
     this.elapsed += dt; this.phaseT += dt;
     switch (this.phase) {
       case "intro": if (this.phaseT > 3.4) this.setPhase("kickoff"); break;
@@ -699,7 +709,6 @@ export class ArenaEngine {
     this.hudClock -= dt;
     if (this.hudClock <= 0) {this.hudClock = 1 / 15; this.pushHud(false)}
     this.writeCssVars();
-    this.scene.render();
   }
 
   simulate(dt: number) {
@@ -750,7 +759,8 @@ export class ArenaEngine {
     const world = cameraRelative(mx, mz, this.camYaw);
     const boost = this.boostTime > 0 ? 1.55 : 1, over = this.overdriveTime > 0 ? 1.35 : 1;
     const carry = this.carrier === p && this.mission.mode === "capture" ? .9 : 1;
-    const speed = p.maxSpeed * boost * over * carry * (this.charging ? .78 : 1);
+    const setShot = this.charging ? (this.mission.mode === "hoops" ? .45 : .78) : 1;
+    const speed = p.maxSpeed * boost * over * carry * setShot;
     if (p.stun > 0) return;
     if (p.lunge > 0) {
       p.lunge -= dt; p.vel.x = p.lungeDir.x * 15; p.vel.z = p.lungeDir.z * 15; this.tackleHits(p);
@@ -861,11 +871,6 @@ export class ArenaEngine {
     if (mode === "targets") return;
     if (this.carrier === a) {
       if (a.wantShot > 0) {a.wantShot -= dt; if (a.wantShot <= 0) this.aiShoot(a)}
-      // Capture: scoring is by carrying the core into the zone.
-      const zone = new Vector3(0, 0, end * ARENA.captureZ);
-      if (mode === "capture" && dist2d(a.pos, zone) < ARENA.captureRadius) {
-        if (a.team === "home") this.addScore(1, "CORE CAPTURED", a); else this.rivalScores("RIVAL CAPTURE", a);
-      }
     }
   }
 
@@ -979,6 +984,20 @@ export class ArenaEngine {
         b.spin += speed * dt / this.ballR;
       }
       b.v.copyFrom(c.vel);
+      if (mode === "capture" && live) {
+        const end = c.team === "home" ? 1 : -1;
+        if (dist2d(c.pos, {x: 0, y: 0, z: end * ARENA.captureZ}) < ARENA.captureRadius) {
+          this.shotBy = c; this.lastTouch = c;
+          if (c.team === "home") this.addScore(1, "CORE CAPTURED", c); else this.rivalScores("RIVAL CAPTURE", c);
+          return;
+        }
+      }
+      // Walk-in goal: the dribbled ball crosses the line inside the mouth.
+      if (mode === "goal" && live && Math.abs(b.p.z) > HL - .15 && Math.abs(b.p.x) < ARENA.goalHalfWidth - this.ballR) {
+        this.shotBy = c; this.shotPerfect = false; this.lastTouch = c;
+        if (b.p.z > 0 && c.team === "home") this.addScore(1, "WALK-IN GOAL", c);
+        else if (b.p.z < 0 && c.team === "rival") this.rivalScores("RIVAL GOAL", c);
+      }
     } else {
       const prev = b.p.clone();
       const events = stepBall(b as any, dt, DIMS, mode === "goal", mode === "capture" ? .4 : .12);
@@ -1067,7 +1086,8 @@ export class ArenaEngine {
   updateKeepers(dt: number, live: boolean) {
     for (const k of this.keepers) {
       const ball = {p: this.ball.p, v: this.ball.v};
-      const t = keeperTarget(ball, k.lineZ, ARENA.goalHalfWidth, k.end);
+      const react = k.side === "rival" ? Math.max(.12, .3 - this.mission.id * .006) : .22;
+      const t = this.elapsed - this.shotTime < react ? {x: k.tx, urgent: false, y: 1.2} : keeperTarget(ball, k.lineZ, ARENA.goalHalfWidth, k.end);
       const shotTowardMe = Math.sign(this.ball.v.z) === k.end && this.carrier === null;
       const slow = shotTowardMe && this.shotPerfect && k.side === "rival" ? .55 : 1;
       k.tx += (t.x - k.tx) * Math.min(1, dt * (t.urgent ? 9 : 3));
@@ -1079,10 +1099,11 @@ export class ArenaEngine {
       k.node.rotation.z = -k.dive * k.end;
       k.node.scaling.setAll(1 + k.flash * .12);
       if (!live || this.carrier) continue;
-      // Save: the ball meets the paddles on the keeper's line.
+      // Save: the ball crosses the keeper's plane within reach of the paddles.
       const b = this.ball;
-      const reaching = Math.sign(b.v.z) === k.end && Math.abs(b.p.z - k.lineZ) < .45 + Math.abs(b.v.z) * dt;
-      if (reaching && Math.abs(b.p.x - k.x) < 1.5 + this.ballR && b.p.y < 2.4) {
+      const prevZ = b.p.z - b.v.z * dt;
+      const crossed = Math.sign(b.v.z) === k.end && (prevZ - k.lineZ) * (b.p.z - k.lineZ) <= 0;
+      if (crossed && Math.abs(b.p.x - k.x) < 1.35 + this.ballR * .5 && b.p.y < 2.3) {
         b.v.z = -b.v.z * .42; b.v.x += (b.p.x - k.x) * 2.4 + (this.random() - .5) * 3; b.v.y = 3.2 + this.random() * 2;
         b.p.z = k.lineZ - k.end * .6; k.flash = 1;
         this.lastTouch = null; this.shotPerfect = false;
@@ -1142,9 +1163,10 @@ export class ArenaEngine {
       bolt.t += dt / .14;
       bolt.mesh.position.copyFrom(Vector3.Lerp(bolt.from, bolt.target.node.position, Math.min(1, bolt.t)));
       if (bolt.t >= 1) {
+        const damage = Number(bolt.mesh.metadata) || 0;
         bolt.mesh.dispose(); this.bolts.splice(this.bolts.indexOf(bolt), 1);
         const t = bolt.target; if (!this.targets.includes(t)) continue;
-        t.hp -= bolt.mesh.metadata as number;
+        t.hp -= damage;
         this.burst(t.node.position, t.golden ? "#ffd447" : "#ff55ad", 30, 5, -4);
         if (t.hp <= 0) {
           this.burst(t.node.position, "#ffffff", 80, 9, -6, .35); this.ring(t.node.position, t.golden ? "#ffd447" : this.mission.color, 3);
