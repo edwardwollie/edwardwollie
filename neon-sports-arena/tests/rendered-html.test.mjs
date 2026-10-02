@@ -38,6 +38,12 @@ test("ships thirty escalating multi-sport missions", async () => {
   assert.deepEqual(new Set(source.MISSIONS.map((mission) => mission.mode)), new Set(["goal", "hoops", "capture", "targets"]));
   assert.equal(source.UPGRADES.length, 4);
   assert.equal(source.TEAMS.length, 6);
+  // 2.0: squads grow with the season, keepers guard Goal Rush from arena two.
+  assert.equal(source.MISSIONS[0].allies, 0);
+  assert.equal(source.MISSIONS.filter((m) => m.mode === "targets").every((m) => m.allies === 0), true);
+  assert.ok(source.MISSIONS[29].allies === 2);
+  assert.ok(source.MISSIONS.filter((m) => m.mode === "goal" && m.world >= 1).every((m) => m.keeper));
+  assert.ok(source.MISSIONS.filter((m) => m.mode === "goal" && m.world === 0).every((m) => !m.keeper));
 });
 
 test("publishes installable portal metadata", async () => {
@@ -46,5 +52,7 @@ test("publishes installable portal metadata", async () => {
   assert.equal(metadata.title, "Neon Sports Arena");
   assert.equal(metadata.coverImage, "https://sports.flexzonicgames.com/og.png");
   assert.equal(manifest.start_url, "/");
+  assert.equal(metadata.version, "2.0.0");
+  assert.equal(metadata.url, "https://sports.flexzonicgames.com");
   assert.match(manifest.name, /Neon Sports Arena/i);
 });

@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Neon Sports Arena",
-  description: "Compete, upgrade, and dominate four futuristic sports across thirty vivid 3D arena matches.",
+  description: "Full 3D futuristic sports: skate with your squad through four sports and six stadiums, charge perfect shots, slam dunk and win the Infinity Championship.",
   metadataBase: new URL("https://sports.flexzonicgames.com"),
   openGraph: { title: "Neon Sports Arena", description: "Compete. Upgrade. Dominate.", images: ["/og.png"] },
   twitter: { card: "summary_large_image", title: "Neon Sports Arena", description: "Compete. Upgrade. Dominate.", images: ["/og.png"] },

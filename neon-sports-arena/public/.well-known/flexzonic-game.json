@@ -1,1 +1,16 @@
-{"title":"Neon Sports Arena","shortTitle":"Neon Sports","description":"Compete, upgrade and dominate four futuristic sports across thirty vivid 3D arena matches.","category":"Action Sports","tagline":"Compete. Upgrade. Dominate.","accent":"#49f4ff","accent2":"#ff55ad","initials":"NS","coverImage":"https://sports.flexzonicgames.com/og.png","featured":true,"order":45}
+{
+  "title": "Neon Sports Arena",
+  "shortTitle": "Neon Sports",
+  "description": "Full 3D futuristic sports: skate with AI teammates through four sports in six themed stadiums, charge perfect shots past keeper drones, slam dunk off launch pads and win the Infinity Championship across thirty matches.",
+  "category": "Action Sports",
+  "tagline": "Compete. Upgrade. Dominate.",
+  "accent": "#49f4ff",
+  "accent2": "#ff55ad",
+  "initials": "NS",
+  "coverImage": "https://sports.flexzonicgames.com/og.png",
+  "featured": true,
+  "order": 45,
+  "name": "Neon Sports Arena",
+  "version": "2.0.0",
+  "url": "https://sports.flexzonicgames.com"
+}

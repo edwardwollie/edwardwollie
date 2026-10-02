@@ -61,7 +61,7 @@ export class HangarViewer {
     this.camera.panningSensibility = 0;
     canvas.addEventListener("pointerdown", this.stopSpin);
     const deck = MeshBuilder.CreateCylinder("turntable", {diameter: 3.4, height: .08, tessellation: 64}, this.scene);
-    deck.position.y = -.04; deck.material = this.builder.material("steel"); deck.receiveShadows = true;
+    deck.position.y = -.04; deck.material = this.builder.material("armor"); deck.receiveShadows = true;
     const ring = MeshBuilder.CreateTorus("turntableRing", {diameter: 3.45, thickness: .035, tessellation: 96}, this.scene);
     ring.material = this.builder.material("glow", this.tints);
     const grid = MeshBuilder.CreateGround("grid", {width: 60, height: 60, subdivisions: 60}, this.scene);

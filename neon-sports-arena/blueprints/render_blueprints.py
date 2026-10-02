@@ -422,7 +422,7 @@ def plate_quarters():
 def plate_detail():
     img, d, w, h = plate("ATHLETE / DETAIL REVIEW", "RUNTIME MESH DETAIL",
                          "LOFTED BODY  |  CONFORMAL KIT SHELLS  |  HOVER-SKATES  |  PULSE LAUNCHER")
-    hero = (45, 172, 1100, 1478)
+    hero = (45, 172, 1100, 1452)
     panel(d, hero, "PLAYABLE ATHLETE // HERO", "CYAN COMETS HOME KIT / AEGIS ARMOUR / VELOCITY BOOTS", 1)
     render(img, asset_faces("athlete", pose="stance"), "HERO", hero, fit=.88)
     group = {p["name"]: p.get("group") for p in ATHLETE}
@@ -430,7 +430,7 @@ def plate_detail():
     details = [((1118, 172, 2055, 600), "HELMET + WRAP VISOR", "CREST / EAR COMMS / CHIN GUARD", "FRONT RIGHT", sel("head", "neck"), .8),
                ((1118, 618, 1580, 1040), "PULSE LAUNCHER", "SHOT + BLAST EMITTER", "RIGHT", sel("rightForeArm", "rightHand"), .82),
                ((1598, 618, 2055, 1040), "NOVA REACTOR", "BACK PACK / EXHAUSTS", "REAR", {n for n in group if n.startswith(("reactor", "exhaust", "backPlate"))}, .8),
-               ((1118, 1058, 2055, 1478), "VELOCITY BOOT", "HOVER-SKATE / TWIN LEVITATION RINGS", "FRONT LEFT", sel("rightFoot"), .78)]
+               ((1118, 1058, 2055, 1452), "VELOCITY BOOT", "HOVER-SKATE / TWIN LEVITATION RINGS", "FRONT LEFT", sel("rightFoot"), .78)]
     for i, (box, title, sub, view, selected, fit) in enumerate(details, 2):
         panel(d, box, title, sub, i)
         render(img, asset_faces("athlete", selected=selected), view, box, fit=fit)
@@ -438,8 +438,8 @@ def plate_detail():
                 ("CERAMIC", PAL["ceramic"]["color"]), ("COMPRESSION SUIT", PAL["suit"]["color"])]
     for i, (label, hexv) in enumerate(swatches):
         x = 48 + i * 400
-        d.rounded_rectangle((x, 1486, x + 30, 1508), radius=5, fill=tuple(bytes.fromhex(hexv[1:])))
-        d.text((x + 40, 1490), label, font=font(12, mono=True), fill=(180, 190, 225))
+        d.rounded_rectangle((x, 1462, x + 30, 1484), radius=5, fill=tuple(bytes.fromhex(hexv[1:])))
+        d.text((x + 40, 1466), label, font=font(12, mono=True), fill=(180, 190, 225))
     footer(d, w, h, 3)
     save(img, "03-athlete-detail.png")
 

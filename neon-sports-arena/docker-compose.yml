@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: neon-sports-arena:1.0.1
+    image: neon-sports-arena:2.0.0
     container_name: neon-sports-arena
     restart: unless-stopped
     ports:

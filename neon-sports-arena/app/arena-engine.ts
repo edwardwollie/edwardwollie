@@ -84,7 +84,7 @@ export class ArenaEngine {
     this.theme = ARENA_THEMES[mission.world];
     this.ballR = mission.mode === "hoops" ? ARENA.orbRadius : mission.mode === "capture" ? ARENA.coreRadius : ARENA.ballRadius;
     this.engine = new Engine(canvas, true, {antialias: this.quality === "high", powerPreference: "high-performance", stencil: true});
-    this.engine.setHardwareScalingLevel(this.quality === "high" ? Math.max(1, window.devicePixelRatio / 1.5) : Math.max(1, window.devicePixelRatio / 1.1));
+    this.engine.setHardwareScalingLevel(this.quality === "high" ? Math.max(1, window.devicePixelRatio / 1.5) : Math.max(1, window.devicePixelRatio / 2));
     this.scene = arenaScene(this.engine, this.theme, this.quality);
     this.builder = new BlueprintBuilder(this.scene, {arena: this.theme.accent});
     this.builder.quality = this.quality;
@@ -157,10 +157,10 @@ export class ArenaEngine {
     this.ballMeshes.forEach(m => this.caster(m));
     if (this.mission.mode === "targets") {this.ballNode.setEnabled(false); return}
     const trailColor = this.mission.mode === "hoops" ? "#ffd447" : this.mission.mode === "capture" ? "#9b7cff" : "#49f4ff";
-    this.trail = new TrailMesh("ballTrail", this.ballNode, this.scene, this.ballR * .9, 26, true);
+    this.trail = new TrailMesh("ballTrail", this.ballNode, this.scene, this.ballR * .45, 14, true);
     const tm = new StandardMaterial("trailMat", this.scene);
-    tm.emissiveColor = hex(trailColor); tm.diffuseColor = Color3.Black(); tm.alpha = .38; tm.disableLighting = true; tm.backFaceCulling = false;
-    this.trail.material = tm; this.trail.isPickable = false;
+    tm.emissiveColor = hex(trailColor).scale(.7); tm.diffuseColor = Color3.Black(); tm.alpha = .22; tm.disableLighting = true; tm.backFaceCulling = false;
+    this.trail.material = tm; this.trail.isPickable = false; this.noGlow(this.trail);
   }
 
   createKeepers() {
@@ -1000,6 +1000,7 @@ export class ArenaEngine {
       }
     } else {
       const prev = b.p.clone();
+      if (this.trail) this.trail.isVisible = Math.hypot(b.v.x, b.v.y, b.v.z) > 6;
       const events = stepBall(b as any, dt, DIMS, mode === "goal", mode === "capture" ? .4 : .12);
       for (const e of events) {
         if (e.type === "goal" && live) {
