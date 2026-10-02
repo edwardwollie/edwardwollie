@@ -1,0 +1,20 @@
+{
+  "title": "Neon Dominion: Rift Command",
+  "shortTitle": "Neon Dominion",
+  "description": "Command a specialist neon strike force in full 3D: blueprint-built exo-frame, drone squad, tactical formations, Rift Legion elites and three-phase colossus guardians.",
+  "category": "Action Strategy",
+  "tagline": "Form the squad. Break the legion. Command the rift. Now in full 3D.",
+  "accent": "#38e8ff",
+  "accent2": "#ff3fd1",
+  "initials": "ND",
+  "coverImage": "https://neon.flexzonicgames.com/assets/og.png",
+  "featured": true,
+  "order": 47,
+  "id": "neon-dominion-rift-command",
+  "name": "Neon Dominion: Rift Command",
+  "version": "3.0.0",
+  "healthPath": "/healthz",
+  "supportsTouch": true,
+  "supportsKeyboard": true,
+  "offlineReady": true
+}

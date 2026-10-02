@@ -1,0 +1,7 @@
+NEON DOMINION: RIFT COMMAND
+Copyright (c) 2026 Flexzonic Games. All rights reserved.
+
+This source package and its original game artwork, interface, sound synthesis,
+writing, and gameplay implementation are provided to the owner of Flexzonic
+Games for deployment and further development. Third-party game branding,
+characters, images, and source code are not included.

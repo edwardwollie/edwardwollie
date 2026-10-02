@@ -1,0 +1,30 @@
+services:
+  neon-dominion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: flexzonic/neon-dominion:3.0.0
+    container_name: neon-dominion
+    restart: unless-stopped
+    # Reuse Docker's built-in bridge instead of consuming another subnet.
+    network_mode: bridge
+    ports:
+      - "${GAME_PORT:-8108}:80"
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:size=16m,mode=0755
+      - /var/run:size=2m,mode=0755
+      - /tmp:size=8m,mode=1777
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz | grep -q neon-dominion-ok"]
+      interval: 30s
+      timeout: 4s
+      retries: 3
+      start_period: 8s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

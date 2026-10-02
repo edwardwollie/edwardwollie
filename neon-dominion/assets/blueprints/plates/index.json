@@ -1,0 +1,137 @@
+[
+  {
+    "key": "00-index",
+    "id": null,
+    "kind": "cover"
+  },
+  {
+    "key": "01-commander",
+    "id": "commander",
+    "kind": "unit"
+  },
+  {
+    "key": "02-striker",
+    "id": "striker",
+    "kind": "unit"
+  },
+  {
+    "key": "03-rail",
+    "id": "rail",
+    "kind": "unit"
+  },
+  {
+    "key": "04-bulwark",
+    "id": "bulwark",
+    "kind": "unit"
+  },
+  {
+    "key": "05-medic",
+    "id": "medic",
+    "kind": "unit"
+  },
+  {
+    "key": "06-grunt",
+    "id": "grunt",
+    "kind": "unit"
+  },
+  {
+    "key": "07-shooter",
+    "id": "shooter",
+    "kind": "unit"
+  },
+  {
+    "key": "08-charger",
+    "id": "charger",
+    "kind": "unit"
+  },
+  {
+    "key": "09-shield",
+    "id": "shield",
+    "kind": "unit"
+  },
+  {
+    "key": "10-jammer",
+    "id": "jammer",
+    "kind": "unit"
+  },
+  {
+    "key": "11-splitter",
+    "id": "splitter",
+    "kind": "unit"
+  },
+  {
+    "key": "12-brute",
+    "id": "brute",
+    "kind": "unit"
+  },
+  {
+    "key": "13-turret",
+    "id": "turret",
+    "kind": "unit"
+  },
+  {
+    "key": "14-guardian",
+    "id": "guardian",
+    "kind": "unit"
+  },
+  {
+    "key": "15-gate",
+    "id": "gate",
+    "kind": "unit"
+  },
+  {
+    "key": "16-core",
+    "id": "core",
+    "kind": "unit"
+  },
+  {
+    "key": "17-riftgate",
+    "id": "riftgate",
+    "kind": "unit"
+  },
+  {
+    "key": "18-crystal",
+    "id": "crystal",
+    "kind": "unit"
+  },
+  {
+    "key": "19-beacon",
+    "id": "beacon",
+    "kind": "unit"
+  },
+  {
+    "key": "20-rock",
+    "id": "rock",
+    "kind": "unit"
+  },
+  {
+    "key": "21-wreck",
+    "id": "wreck",
+    "kind": "unit"
+  },
+  {
+    "key": "22-commander-poses",
+    "id": "commander",
+    "kind": "poses"
+  },
+  {
+    "key": "23-guardian-poses",
+    "id": "guardian",
+    "kind": "poses"
+  },
+  {
+    "key": "24-lineup",
+    "id": null,
+    "kind": "lineup"
+  },
+  {
+    "key": "25-sector-01",
+    "id": null,
+    "kind": "sector"
+  },
+  {
+    "key": "26-sector-05",
+    "id": null,
+    "kind": "sector"
+  }
+]

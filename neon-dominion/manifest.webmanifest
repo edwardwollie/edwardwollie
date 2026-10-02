@@ -1,0 +1,23 @@
+{
+  "name": "Neon Dominion: Rift Command",
+  "short_name": "Neon Dominion",
+  "description": "A full 3D futuristic squad action game from Flexzonic Games.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060918",
+  "theme_color": "#060918",
+  "categories": [
+    "games",
+    "entertainment",
+    "action"
+  ],
+  "icons": [
+    {
+      "src": "/assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

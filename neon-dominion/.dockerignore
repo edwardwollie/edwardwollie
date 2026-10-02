@@ -1,0 +1,13 @@
+.git
+.gitignore
+*.zip
+node_modules
+npm-debug.log*
+screenshots
+tests
+scripts
+tools
+blueprints
+README.md
+DEPLOY-PROXMOX.md
+LICENSE.txt

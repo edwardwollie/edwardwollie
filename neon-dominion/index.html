@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#060918" />
+    <meta name="description" content="Command an evolving neon strike force through hostile rifts in this mobile-first sci-fi squad action game from Flexzonic Games." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Neon Dominion" />
+    <meta property="og:title" content="Neon Dominion: Rift Command" />
+    <meta property="og:description" content="Recruit drones, choose upgrade gates, and break the Rift Legion." />
+    <meta property="og:image" content="https://neon.flexzonicgames.com/assets/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://neon.flexzonicgames.com/assets/og.png" />
+    <title>Neon Dominion: Rift Command</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/icon.svg" />
+    <link rel="stylesheet" href="/styles.css?v=3.0.0" />
+  </head>
+  <body>
+    <main id="app" aria-label="Neon Dominion game">
+      <canvas id="gameCanvas" aria-label="Neon Dominion battlefield"></canvas>
+
+      <div id="bootScreen" class="boot-screen" aria-live="polite">
+        <div class="boot-ring" aria-hidden="true"></div>
+        <strong>NEON DOMINION</strong>
+        <span id="bootStatus">INITIALISING 3D COMMAND LINK</span>
+      </div>
+
+      <div id="scanlines" aria-hidden="true"></div>
+      <div id="vignette" aria-hidden="true"></div>
+
+      <section id="hud" class="hud hidden" aria-label="Mission status">
+        <div class="hud-top">
+          <div class="status-cluster">
+            <div class="commander-avatar" aria-hidden="true">
+              <span></span>
+            </div>
+            <div class="vitals">
+              <div class="vital-row">
+                <span>ARMOR</span>
+                <div class="meter armor-meter"><i id="healthFill"></i></div>
+                <b id="healthText">100</b>
+              </div>
+              <div class="vital-row shield-row">
+                <span>SHIELD</span>
+                <div class="meter shield-meter"><i id="shieldFill"></i></div>
+                <b id="shieldText">50</b>
+              </div>
+            </div>
+          </div>
+
+          <div class="mission-progress">
+            <span id="sectorLabel">SECTOR 01</span>
+            <div class="progress-track">
+              <i id="progressFill"></i>
+              <em id="bossMarker" title="Rift guardian">◆</em>
+            </div>
+            <small id="objectiveText">ADVANCE TO THE RIFT</small>
+          </div>
+
+          <div class="resource-cluster">
+            <div class="resource core-resource"><i></i><b id="coreCount">0</b></div>
+            <div class="resource squad-resource"><i></i><b id="squadCount">1</b></div>
+            <button id="pauseButton" class="icon-button" aria-label="Pause game">Ⅱ</button>
+          </div>
+        </div>
+
+        <div id="comboBadge" class="combo-badge" aria-live="polite">
+          <strong id="comboValue">x2</strong>
+          <span>CHAIN</span>
+        </div>
+
+        <div id="bossHud" class="boss-hud hidden" aria-live="polite">
+          <span id="bossName">RIFT GUARDIAN</span>
+          <div><i id="bossHealthFill"></i></div>
+          <b id="bossHealthText">100%</b>
+        </div>
+
+        <div id="joystickZone" class="joystick-zone" aria-label="Movement joystick">
+          <div id="joystickBase" class="joystick-base">
+            <div id="joystickThumb" class="joystick-thumb"></div>
+          </div>
+          <span>MOVE</span>
+        </div>
+
+        <button id="stanceButton" class="stance-button" data-stance="balanced" aria-label="Cycle tactical stance">
+          <span>FORMATION</span><strong id="stanceLabel">BALANCED</strong><small>F</small>
+        </button>
+
+        <button id="novaButton" class="nova-button" aria-label="Activate Nova Pulse">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="nova-cooldown" cx="50" cy="50" r="43"></circle>
+            <path d="M52 8 39 39 11 50l28 11 13 31 10-31 27-11-27-11z"></path>
+          </svg>
+          <strong>NOVA</strong>
+          <small id="novaTimer">READY</small>
+        </button>
+
+        <div id="desktopHint" class="desktop-hint">WASD / ARROWS TO MOVE · F FORMATION · SPACE NOVA · P PAUSE</div>
+      </section>
+
+      <section id="menuScreen" class="screen menu-screen active" aria-labelledby="gameTitle">
+        <div class="menu-orbit orbit-one" aria-hidden="true"></div>
+        <div class="menu-orbit orbit-two" aria-hidden="true"></div>
+        <div class="brand-mark" aria-hidden="true">
+          <div class="brand-core"></div>
+          <div class="brand-wing left"></div>
+          <div class="brand-wing right"></div>
+        </div>
+        <p class="eyebrow">A FLEXZONIC GAMES EXPERIENCE</p>
+        <h1 id="gameTitle"><span>NEON</span> DOMINION</h1>
+        <h2>RIFT COMMAND</h2>
+        <p class="menu-copy">Build the squad. Break the legion. Own the rift.</p>
+
+        <div class="mission-card">
+          <div>
+            <span>NEXT DEPLOYMENT</span>
+            <strong id="menuSector">SECTOR 01</strong>
+          </div>
+          <div class="mission-stat">
+            <span>BEST SCORE</span>
+            <strong id="bestScore">0</strong>
+          </div>
+          <div class="mission-stat">
+            <span>CREDITS</span>
+            <strong id="menuCredits">0</strong>
+          </div>
+        </div>
+
+        <div class="menu-actions">
+          <button id="playButton" class="primary-button">
+            <span>DEPLOY SQUAD</span>
+            <i>▶</i>
+          </button>
+          <div class="secondary-actions">
+            <button id="upgradeButton" class="secondary-button">UPGRADES</button>
+            <button id="howButton" class="secondary-button">HOW TO PLAY</button>
+          </div>
+          <button id="hangarButton" class="secondary-button wide blueprint-button">3D BLUEPRINT HANGAR</button>
+          <button id="installButton" class="text-button hidden">INSTALL GAME</button>
+        </div>
+
+        <div class="version-tag">FULL 3D RIFT ENGINE · v3.0.0</div>
+      </section>
+
+      <section id="tutorialScreen" class="modal-screen hidden" aria-labelledby="tutorialTitle">
+        <div class="panel tutorial-panel">
+          <button class="close-button" data-close="tutorialScreen" aria-label="Close tutorial">×</button>
+          <p class="panel-kicker">COMMAND BRIEFING</p>
+          <h2 id="tutorialTitle">How to dominate the rift</h2>
+          <div class="tutorial-grid">
+            <article>
+              <div class="tutorial-icon joystick-icon"><i></i></div>
+              <h3>Move</h3>
+              <p>Drag the left control. On a computer, use WASD or the arrow keys.</p>
+            </article>
+            <article>
+              <div class="tutorial-icon gate-icon"><i>+3</i></div>
+              <h3>Choose gates</h3>
+              <p>Pass through cyan and green gates to recruit, multiply, shield, or power up.</p>
+            </article>
+            <article>
+              <div class="tutorial-icon combat-icon"><i></i></div>
+              <h3>Auto-fire</h3>
+              <p>Your commander and drones automatically target nearby Rift Legion units.</p>
+            </article>
+            <article>
+              <div class="tutorial-icon nova-icon">✦</div>
+              <h3>Nova Pulse</h3>
+              <p>Tap NOVA or press Space to unleash a shockwave when the ability is ready.</p>
+            </article>
+            <article>
+              <div class="tutorial-icon combat-icon"><i></i></div>
+              <h3>Tactical formation</h3>
+              <p>Tap FORMATION or press F to cycle Balanced, Assault Wedge, and Bulwark Wall during combat.</p>
+            </article>
+            <article>
+              <div class="tutorial-icon gate-icon"><i>4</i></div>
+              <h3>Specialist squad</h3>
+              <p>Striker, Rail, Bulwark, and Medic drones have different weapons, durability, ranges, and battlefield roles.</p>
+            </article>
+          </div>
+          <button id="tutorialDeploy" class="primary-button compact"><span>BEGIN MISSION</span><i>▶</i></button>
+        </div>
+      </section>
+
+      <section id="upgradeScreen" class="modal-screen hidden" aria-labelledby="upgradeTitle">
+        <div class="panel upgrade-panel">
+          <button class="close-button" data-close="upgradeScreen" aria-label="Close upgrades">×</button>
+          <p class="panel-kicker">COMMAND VAULT</p>
+          <h2 id="upgradeTitle">Permanent upgrades</h2>
+          <div class="vault-balance">AVAILABLE <strong id="vaultCredits">0</strong> <span>ENERGY CREDITS</span></div>
+          <div class="upgrade-list">
+            <article class="upgrade-card" data-upgrade="damage">
+              <div class="upgrade-symbol damage-symbol">⌁</div>
+              <div class="upgrade-copy">
+                <h3>Ion Accelerators</h3>
+                <p>Increase all squad weapon damage by 12% per level.</p>
+                <div class="level-pips" data-pips="damage"></div>
+              </div>
+              <button class="buy-button" data-buy="damage"><span>120</span> UPGRADE</button>
+            </article>
+            <article class="upgrade-card" data-upgrade="armor">
+              <div class="upgrade-symbol armor-symbol">⬡</div>
+              <div class="upgrade-copy">
+                <h3>Quantum Plating</h3>
+                <p>Add 15 armor and 8 shield capacity per level.</p>
+                <div class="level-pips" data-pips="armor"></div>
+              </div>
+              <button class="buy-button" data-buy="armor"><span>150</span> UPGRADE</button>
+            </article>
+            <article class="upgrade-card" data-upgrade="squad">
+              <div class="upgrade-symbol squad-symbol">◈</div>
+              <div class="upgrade-copy">
+                <h3>Drone Uplink</h3>
+                <p>Deploy with one extra drone and raise the squad cap per level.</p>
+                <div class="level-pips" data-pips="squad"></div>
+              </div>
+              <button class="buy-button" data-buy="squad"><span>180</span> UPGRADE</button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="pauseScreen" class="modal-screen hidden" aria-labelledby="pauseTitle">
+        <div class="panel pause-panel">
+          <p class="panel-kicker">TACTICAL HOLD</p>
+          <h2 id="pauseTitle">Mission paused</h2>
+          <div class="pause-stats">
+            <span>SECTOR <b id="pauseSector">01</b></span>
+            <span>SCORE <b id="pauseScore">0</b></span>
+            <span>SQUAD <b id="pauseSquad">1</b></span>
+          </div>
+          <button id="resumeButton" class="primary-button compact"><span>RESUME</span><i>▶</i></button>
+          <button id="restartButton" class="secondary-button wide">RESTART SECTOR</button>
+          <button id="quitButton" class="text-button">RETURN TO COMMAND</button>
+          <div class="settings-row">
+            <button id="soundToggle" class="setting-toggle" aria-pressed="true">SOUND <b>ON</b></button>
+            <button id="hapticToggle" class="setting-toggle" aria-pressed="true">HAPTICS <b>ON</b></button>
+            <button id="graphicsToggle" class="setting-toggle" aria-pressed="true">GRAPHICS <b>AUTO</b></button>
+          </div>
+        </div>
+      </section>
+
+      <section id="resultScreen" class="modal-screen hidden" aria-labelledby="resultTitle">
+        <div class="panel result-panel">
+          <div id="resultEmblem" class="result-emblem">✦</div>
+          <p id="resultKicker" class="panel-kicker">RIFT SECURED</p>
+          <h2 id="resultTitle">Sector complete</h2>
+          <div class="result-score"><span>MISSION SCORE</span><strong id="resultScore">0</strong></div>
+          <div class="result-grid">
+            <div><span>LEGION DEFEATED</span><b id="resultKills">0</b></div>
+            <div><span>CORE SHARDS</span><b id="resultCores">0</b></div>
+            <div><span>CREDITS EARNED</span><b id="resultCredits">0</b></div>
+          </div>
+          <button id="nextButton" class="primary-button compact"><span>NEXT SECTOR</span><i>▶</i></button>
+          <button id="retryButton" class="primary-button compact hidden"><span>REDEPLOY</span><i>↻</i></button>
+          <button id="resultMenuButton" class="text-button">RETURN TO COMMAND</button>
+        </div>
+      </section>
+
+      <section id="hangarScreen" class="hangar-screen hidden" aria-label="3D blueprint hangar">
+        <header class="hangar-top">
+          <div>
+            <p class="panel-kicker">3D BLUEPRINT HANGAR · SERIES ND-3</p>
+            <h2>Exact in-game meshes</h2>
+          </div>
+          <button class="close-button" data-hangar-close aria-label="Close blueprint hangar">×</button>
+        </header>
+        <nav class="hangar-list" data-hangar-list aria-label="Units"></nav>
+        <aside class="hangar-info">
+          <small data-hangar-designation>ND-C01</small>
+          <h3 data-hangar-name>Commander</h3>
+          <p data-hangar-role></p>
+          <div class="hangar-dims" data-hangar-dims></div>
+          <div class="hangar-links">
+            <a data-hangar-plate class="hangar-link" target="_blank" rel="noopener">OPEN PLATE</a>
+            <a data-hangar-glb class="hangar-link" download>DOWNLOAD GLB</a>
+            <a data-hangar-atlas class="hangar-link wide" target="_blank" rel="noopener">FULL BLUEPRINT ATLAS (PDF)</a>
+          </div>
+        </aside>
+        <div class="hangar-controls">
+          <div class="hangar-row" data-hangar-views aria-label="View"></div>
+          <div class="hangar-row" data-hangar-poses aria-label="Pose"></div>
+          <div class="hangar-row">
+            <button class="hangar-chip toggle" data-hangar-toggle="ink" aria-pressed="false">BLUEPRINT INK</button>
+            <button class="hangar-chip toggle" data-hangar-toggle="wire" aria-pressed="false">WIREFRAME</button>
+            <button class="hangar-chip toggle" data-hangar-toggle="spin" aria-pressed="true">TURNTABLE</button>
+          </div>
+          <small class="hangar-hint">DRAG TO ORBIT · SCROLL OR PINCH TO ZOOM</small>
+        </div>
+      </section>
+
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div id="rotateNotice" class="rotate-notice" aria-hidden="true">
+        <div>↻</div><span>Rotate for a wider battlefield</span>
+      </div>
+    </main>
+    <noscript>This game requires JavaScript to run.</noscript>
+    <script type="module" src="/app/main.js"></script>
+  </body>
+</html>
