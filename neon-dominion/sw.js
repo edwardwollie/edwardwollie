@@ -10,6 +10,7 @@ const APP_SHELL = [
   "/app/main.js",
   "/app/render3d.js",
   "/app/hangar.js",
+  "/app/features.js",
   "/app/blueprints/kit.js",
   "/app/blueprints/models.js",
   "/app/blueprints/rigs.js",

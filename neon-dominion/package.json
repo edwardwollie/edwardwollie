@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Full 3D futuristic tactical squad action game with blueprint-built units, specialist drones, combat formations, Rift Legion elites and multi-phase guardians.",
   "scripts": {
-    "check": "node --check app/audio.js && node --check app/game.js && node --check app/main.js && node --check app/render3d.js && node --check app/hangar.js && node --check app/blueprints/kit.js && node --check app/blueprints/models.js && node --check app/blueprints/rigs.js && node --check sw.js && node scripts/smoke.mjs && node scripts/logic-smoke.mjs && node scripts/tactical-smoke.mjs && node scripts/blueprint-contract.mjs",
+    "check": "node --check app/audio.js && node --check app/game.js && node --check app/main.js && node --check app/render3d.js && node --check app/hangar.js && node --check app/features.js && node --check app/blueprints/kit.js && node --check app/blueprints/models.js && node --check app/blueprints/rigs.js && node --check sw.js && node scripts/smoke.mjs && node scripts/logic-smoke.mjs && node scripts/tactical-smoke.mjs && node scripts/blueprint-contract.mjs",
     "test": "npm run check",
     "test:browser": "node scripts/browser-smoke.mjs",
     "blueprints": "node tools/blueprints.mjs",

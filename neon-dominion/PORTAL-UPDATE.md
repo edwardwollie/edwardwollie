@@ -21,6 +21,7 @@ Verify the game, the security headers and the discovery record:
 curl -fsS http://127.0.0.1:8108/healthz
 curl -fsSI http://127.0.0.1:8108/ | grep -i content-security-policy
 curl -fsS http://127.0.0.1:8108/version.json
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8108/assets/blueprints/plates/index.json   # must print 404 (blueprints are private)
 curl -fsS http://127.0.0.1:8108/.well-known/flexzonic-game.json
 curl -fsS https://neon.flexzonicgames.com/.well-known/flexzonic-game.json
 ```

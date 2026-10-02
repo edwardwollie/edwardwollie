@@ -8,14 +8,14 @@
 - **3D world.** Each sector has a themed sky (nebula, stars, rift glow), a hex-grid terrain, a glowing causeway with animated chevrons and lane lines, edge bollards, a procedurally lit megacity skyline, orbital rings, an energy boundary fence and the Rift Gate with a swirling vortex and sky beam at the end of the sector.
 - **Combat effects.** Plasma bolts, muzzle flashes with dynamic lights, explosions with debris physics, smoke, embers and scorch marks. Also included: a shield bubble and Bastion barrier domes, the NOVA shockwave dome, jammer range rings, enemy ground markers, health and shield bars, and gate fields with holographic labels.
 - **Cinematics.** The guardian's arrival gets a 2-second reveal camera, during which the battlefield waits. Victory gets a slow-motion orbit and defeat a desaturated pull-back. Reduced-motion users get no cinematics and less shake.
-- **3D Blueprint Hangar** (main menu). You can orbit any unit, snap to front, rear, left, right, top, underside or quarter views, and preview the rest, move, aim/fire and special poses. Ink, wireframe and turntable modes are available, along with the measured dimensions. You can open the unit's plate, download its GLB, or open the full PDF atlas.
+- **3D Blueprint Hangar** (private, not shown to players; open it locally at `http://localhost:8108/?hangar`). You can orbit any unit, snap to front, rear, left, right, top, underside or quarter views, and preview the rest, move, aim/fire and special poses. Ink, wireframe and turntable modes are available, along with the measured dimensions. You can open the unit's plate, download its GLB, or open the full PDF atlas.
 - **Graphics setting.** AUTO, HIGH, MEDIUM and LOW live in the pause menu. AUTO picks a tier from the device and lowers the resolution, then the tier, if the frame rate drops. The classic 2D renderer remains as an automatic fallback.
 
 ## Blueprint atlas (ND-3)
 
 27 sheets: an index, 21 unit or prop sheets, two pose sheets (commander and guardian), a force lineup at common scale, and sector 01 and 05 layouts generated from the real level generator. Each unit sheet has front, rear, left, right, top and underside orthographic views at one shared scale with dimension callouts, PBR quarter views from the front-left and rear-right, a specification table, a finish schedule and the joint list.
 
-Files: `assets/blueprints/Neon-Dominion-3D-Blueprint-Atlas-v3.0.0.pdf`, `assets/blueprints/plates/*.jpg`, `assets/blueprints/models/*.glb`, `blueprints/dimensions.json`.
+The blueprint files stay in the repository for the team and are excluded from the public Docker image. Files: `assets/blueprints/Neon-Dominion-3D-Blueprint-Atlas-v3.0.0.pdf`, `assets/blueprints/plates/*.jpg`, `assets/blueprints/models/*.glb`, `blueprints/dimensions.json`.
 
 ## Fixes and infrastructure
 

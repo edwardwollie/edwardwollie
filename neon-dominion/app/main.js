@@ -2,6 +2,7 @@ import { SynthAudio } from "./audio.js";
 import { RiftCommandGame } from "./game.js";
 import { Renderer3D } from "./render3d.js";
 import { setupHangar } from "./hangar.js";
+import { hangarAllowed } from "./features.js";
 
 const SAVE_KEY = "flexzonic.neonDominion.save.v1";
 const MAX_UPGRADE_LEVEL = 5;
@@ -128,10 +129,10 @@ const game = new RiftCommandGame(elements.canvas, audio, {
   onHaptic: vibrate
 }, { renderer });
 
-const hangar = renderer
+const hangar = renderer && hangarAllowed()
   ? setupHangar({ renderer, canvas: elements.canvas, screen: elements.hangarScreen, audio, onClose: () => elements.menu.classList.add("active") })
   : null;
-if (!hangar) elements.hangarButton.classList.add("hidden");
+elements.hangarButton.classList.toggle("hidden", !hangar);
 elements.boot.classList.add("done");
 window.__neonDominion = { game, renderer };
 

@@ -16,6 +16,7 @@ const required = [
   "app/main.js",
   "app/render3d.js",
   "app/hangar.js",
+  "app/features.js",
   "app/blueprints/kit.js",
   "app/blueprints/models.js",
   "app/blueprints/rigs.js",
@@ -72,6 +73,14 @@ if (includes.length < locations.length + 1) throw new Error("Every nginx locatio
 if (!dockerfile.includes("COPY security-headers.conf /etc/nginx/snippets/security-headers.conf")) throw new Error("Security headers not copied into the image");
 if (!dockerfile.includes("COPY app /usr/share/nginx/html/app")) throw new Error("App modules not copied into the image");
 if (/immutable/.test(nginx)) throw new Error("Code must not be cached as immutable");
+// The blueprint hangar and its files are private.
+const dockerignore = await read(".dockerignore");
+const features = await read("app/features.js");
+if (!/^assets\/blueprints$/m.test(dockerignore)) throw new Error("Blueprint files must be excluded from the Docker image");
+if (!nginx.includes("location ^~ /assets/blueprints/") || !/blueprints\/ \{[^}]*return 404;/.test(nginx)) throw new Error("nginx must refuse /assets/blueprints/");
+if (!/blueprintHangar: false/.test(features)) throw new Error("Blueprint hangar must be disabled in the public build");
+if (!/id="hangarButton" class="[^"]*\bhidden\b/.test(html)) throw new Error("Hangar button must be hidden by default");
+if (serviceWorker.includes("/assets/blueprints")) throw new Error("Service worker must not reference blueprint files");
 if (!serviceWorker.includes("/.well-known/flexzonic-game.json")) throw new Error("Portal metadata must bypass the service worker cache");
 if (!compose.includes("${GAME_PORT:-8108}:80")) throw new Error("Expected configurable port 8108 is missing");
 if (!compose.includes("network_mode: bridge")) throw new Error("Shared Docker bridge mode is missing");

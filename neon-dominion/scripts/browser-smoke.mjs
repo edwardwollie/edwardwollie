@@ -90,6 +90,11 @@ async function run(viewport, label) {
   assert.ok(await page.evaluate(() => !document.getElementById("pauseScreen").classList.contains("hidden")), "pause should open");
   await page.click("#quitButton");
   await sleep(800);
+  assert.ok(await page.evaluate(() => document.getElementById("hangarButton").classList.contains("hidden")), "hangar must be hidden from players");
+  // Developers can still open the hangar on a local server with ?hangar.
+  await page.goto(`${base}/?hangar`);
+  await page.waitForFunction(() => document.getElementById("bootScreen")?.classList.contains("done"), null, { timeout: 60000 });
+  await sleep(800);
   await page.click("#hangarButton");
   await sleep(2500);
   await shot(page, `${label}-hangar`);
@@ -135,4 +140,4 @@ if (errors.length) {
   console.error(errors.join("\n"));
   process.exit(1);
 }
-console.log("Browser smoke passed: 3D boot, deploy, movement, NOVA, formation, pause, hangar (desktop + phone).");
+console.log("Browser smoke passed: 3D boot, deploy, movement, NOVA, formation, pause, hangar hidden publicly and available locally (desktop + phone).");

@@ -122,7 +122,7 @@ See `RELEASE-NOTES-v3.0.0.md`. Summary:
 
 - Real-time 3D (three.js / WebGL2) with PBR materials, shadows, bloom and cinematic cameras.
 - Every unit is built from the ND-3 3D blueprints, so the meshes on the plates are the ones in the game.
-- 3D Blueprint Hangar in the main menu: six-side views, quarter views, poses, blueprint ink, wireframe, GLB and PDF downloads.
+- 3D Blueprint Hangar (private design tool): six-side views, quarter views, poses, blueprint ink and wireframe. It is hidden from players, and the blueprint PDF, plates and GLBs are not shipped in the Docker image (nginx also returns 404 for `/assets/blueprints/`). To use it, serve the project locally and open `http://localhost:8108/?hangar`, or set `blueprintHangar: true` in `app/features.js`.
 - Graphics setting (AUTO / HIGH / MEDIUM / LOW) with automatic resolution scaling. The classic 2D renderer is used automatically on devices without WebGL2.
 
 ### Tests
