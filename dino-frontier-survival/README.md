@@ -1,4 +1,84 @@
-# vinext-starter
+# Dino Frontier Survival 2.0 — full 3D
+
+Track. Defend. Evolve. A third-person 3D dinosaur survival shooter built with Babylon.js on vinext, served at
+`frontier.flexzonicgames.com`. Every ranger, dinosaur, structure and prop is generated from measured
+[3D blueprints](docs/BLUEPRINTS.md), and the game ships its own interactive blueprint archive at `/blueprints`.
+
+![Solar Grasslands — third-person combat](docs/screenshots/solar-grasslands.png)
+
+| Thunder Canopy storm | Apex Caldera boss fight |
+| --- | --- |
+| ![Thunder Canopy](docs/screenshots/thunder-canopy.png) | ![Crimson Tyrant boss](docs/screenshots/apex-caldera-boss.png) |
+| **Crimson Tyrant blueprint sheet** | **3D field guide** |
+| ![Crimson Tyrant blueprint](docs/blueprints/rex-blueprint.png) | ![Field guide](docs/screenshots/field-guide.png) |
+
+## What's in 2.0
+
+- **Third-person 3D camera** with over-the-shoulder aim, pointer lock, mouse wheel zoom, terrain-aware collision,
+  FOV kick on dash and camera shake — plus the classic **tactical** overhead view (press **V**).
+- **Blueprint-built, rigged models** for the ranger, Pulse Drone and five species, procedurally animated:
+  walk cycles, tail sway, jaw and frill motion, recoil, death topples.
+- **Distinct dinosaur AI**: raptor packs flank and pounce, Venom Spitters keep range and lob arcing acid that leaves
+  puddles, Ironhide Ankys are armoured from the front and spin their tail club, Storm Triceratops paw the ground
+  and charge (and are stunned and exposed if they miss), and the Crimson Tyrant bites, roars to slow you and stomps
+  out shockwave rings you must jump.
+- **Abilities**: jump (Space), Flux Dash with invulnerability frames (Shift), EMP Pulse charged by kills (Q), hold-to-fire
+  Arc Rifle with head-shot crits, and an auto-targeting Pulse Drone.
+- **Ten hand-tuned biomes**: procedural terrain, sky domes with stars and a ringed planet, mountain silhouettes,
+  thin-instanced forests, crystals, rocks and grass, glowing acid/lava pools, an energy fence, a frontier outpost
+  and weather (fireflies, acid rain, dust, pollen, spores, embers, lightning storms, snow, quantum sparks, ash).
+- **Effects**: selective glow, ACES tone mapping, FXAA, vignette, chromatic hits, film grain, PCF shadows, particle
+  bursts, muzzle light, floating damage numbers, hit markers, low-health heartbeat.
+- **Procedural audio** (Web Audio, no files): rifle, drone, impacts, roars, stomps, thunder and an ambient score
+  that tightens during boss fights.
+- **HUD**: radar, boss bar, ability cooldown rings, combo chain, wave meter, sector banners, pause menu.
+- **Every input**: keyboard + mouse, gamepad, and touch (analog stick, drag-to-look, fire/jump/dash/EMP buttons).
+- **Settings** (saved): camera, graphics quality (low/medium/high), look sensitivity, invert Y, volume, camera shake.
+- **Progression**: five Evolution Lab upgrades (new: Shock Core), a best score per sector, accuracy and best-chain
+  stats on every debrief, and a 3D field guide. Existing saves carry over.
+
+## Controls
+
+| Action | Keyboard / mouse | Gamepad | Touch |
+| --- | --- | --- | --- |
+| Move | WASD / arrows | Left stick | Left thumb-stick |
+| Look / aim | Mouse (click to lock), right-drag fallback | Right stick | Drag right side |
+| Fire | Hold left mouse or F | RT | FIRE (hold) |
+| Jump | Space | A | JUMP |
+| Flux Dash | Shift | B / RB | DASH |
+| EMP Pulse | Q | Y / LB | EMP |
+| Camera | V | View | — |
+| Pause | Esc / P | Start | ❚❚ |
+
+## Project map
+
+| Path | Purpose |
+| --- | --- |
+| `app/blueprints.ts` | 3D blueprint data — single source of truth for every model |
+| `app/model-builder.ts` | Builds rigged Babylon models (and thin-instanced props) from blueprints |
+| `app/frontier-engine.ts` | Game loop: cameras, input, ranger, AI, projectiles, hazards, FX, HUD feed |
+| `app/world.ts` | Biomes, terrain, sky, mountains, props, fence, outpost, weather |
+| `app/audio.ts` | Procedural sound effects and ambient score |
+| `app/DinoFrontier.tsx` | Command base, training, HUD, pause/settings, touch controls, field guide |
+| `app/blueprints/` | `/blueprints` archive (orthographic sheets + perspective view) |
+| `docs/BLUEPRINTS.md` | Blueprint reference with rendered sheets |
+
+## Develop
+
+```bash
+npm ci
+npm run build && npm run start   # http://localhost:3000
+npm test                         # build + unit, blueprint and rendered-route tests
+npm run lint
+```
+
+Add `?debug=1` to the URL to expose the running engine as `window.__frontier` for testing.
+
+See [INSTALL.md](INSTALL.md) for deploying to the Flexzonic games host.
+
+---
+
+## Platform notes (vinext starter)
 
 A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and

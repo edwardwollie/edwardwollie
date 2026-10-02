@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: dino-frontier-survival:1.0.1
+    image: dino-frontier-survival:2.0.0
     container_name: dino-frontier-survival
     restart: unless-stopped
     ports:

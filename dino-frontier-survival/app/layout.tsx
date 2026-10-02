@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Dino Frontier Survival",
-  description: "Track, defend and evolve across a colorful futuristic dinosaur frontier.",
+  description: "Track, defend and evolve across a colorful futuristic 3D dinosaur frontier.",
   metadataBase: new URL("https://frontier.flexzonicgames.com"),
   openGraph: { title: "Dino Frontier Survival", description: "Track. Defend. Evolve.", images: ["/og.png"] },
   twitter: { card: "summary_large_image", title: "Dino Frontier Survival", description: "Track. Defend. Evolve.", images: ["/og.png"] },
