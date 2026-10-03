@@ -1,6 +1,6 @@
 // Lightweight particle effects (instanced, one draw call each).
-import * as THREE from './vendor/three.module.min.js?v=2.0.0';
-import { dotTexture } from './engine.js?v=2.0.0';
+import * as THREE from './vendor/three.module.min.js?v=2.0.1';
+import { dotTexture } from './engine.js?v=2.0.1';
 
 const dummy = new THREE.Object3D();
 const tmpColor = new THREE.Color();

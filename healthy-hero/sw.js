@@ -1,6 +1,6 @@
-// Healthy Hero 3D service worker — offline play. Versioned files (?v=2.0.0) are immutable per
+// Healthy Hero 3D service worker — offline play. Versioned files (?v=2.0.1) are immutable per
 // release, so they are served cache-first; everything else is network-first with a cache fallback.
-const VERSION = '2.0.0';
+const VERSION = '2.0.1';
 const CACHE = `healthy-hero-v${VERSION}-3d`;
 const V = `?v=${VERSION}`;
 const MODULES = ['main', 'narrator', 'mission-plan', 'content', 'blueprints', 'models', 'rig', 'engine', 'effects', 'world', 'gates', 'run', 'island', 'stage', 'ui', 'audio', 'blueprint-render'];

@@ -1,9 +1,9 @@
 // Three Power Gates built from the "gate" blueprint. Each carries an answer sign texture split
 // across its two panels, a lane badge, and the topic emblem in its beacon.
-import * as THREE from './vendor/three.module.min.js?v=2.0.0';
-import { LAYOUT, laneX, EMBLEM_BY_TOPIC } from './blueprints.js?v=2.0.0';
-import { buildModel } from './models.js?v=2.0.0';
-import { LANES, WORLDS } from './content.js?v=2.0.0';
+import * as THREE from './vendor/three.module.min.js?v=2.0.1';
+import { LAYOUT, laneX, EMBLEM_BY_TOPIC } from './blueprints.js?v=2.0.1';
+import { buildModel } from './models.js?v=2.0.1';
+import { LANES, WORLDS } from './content.js?v=2.0.1';
 
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const SIGN_W = 1024, SIGN_H = 512;

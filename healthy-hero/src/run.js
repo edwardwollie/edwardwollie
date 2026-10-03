@@ -1,14 +1,14 @@
 // The 3D run: hero + companion on a three-lane track, Power Gates, biome world and camera.
 // Game rules and timers live in main.js; this file only shows what is happening.
-import * as THREE from './vendor/three.module.min.js?v=2.0.0';
-import { LAYOUT, laneX } from './blueprints.js?v=2.0.0';
-import { buildModel } from './models.js?v=2.0.0';
-import { Rig } from './rig.js?v=2.0.0';
-import { World } from './world.js?v=2.0.0';
-import { GateTrio } from './gates.js?v=2.0.0';
-import { Bursts, fresnelMaterial, glowSprite } from './effects.js?v=2.0.0';
-import { dotTexture } from './engine.js?v=2.0.0';
-import { LANES, WORLDS } from './content.js?v=2.0.0';
+import * as THREE from './vendor/three.module.min.js?v=2.0.1';
+import { LAYOUT, laneX } from './blueprints.js?v=2.0.1';
+import { buildModel } from './models.js?v=2.0.1';
+import { Rig } from './rig.js?v=2.0.1';
+import { World } from './world.js?v=2.0.1';
+import { GateTrio } from './gates.js?v=2.0.1';
+import { Bursts, fresnelMaterial, glowSprite } from './effects.js?v=2.0.1';
+import { dotTexture } from './engine.js?v=2.0.1';
+import { LANES, WORLDS } from './content.js?v=2.0.1';
 
 const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
 

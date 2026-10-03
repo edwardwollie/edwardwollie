@@ -1,7 +1,12 @@
 // DOM builders for every screen and modal. No innerHTML with dynamic text and no inline
 // style attributes (the server's CSP forbids them); dynamic values use CSSOM.
-import { WORLDS, LANES, TUTORIAL, FAMILY, Q, MOVES, TOPIC_FACTS } from './content.js?v=2.0.0';
-import { BLUEPRINTS, HERO_ORDER, toCm } from './blueprints.js?v=2.0.0';
+import { WORLDS, LANES, TUTORIAL, FAMILY, Q, MOVES, TOPIC_FACTS } from './content.js?v=2.0.1';
+import { BLUEPRINTS, HERO_ORDER, toCm } from './blueprints.js?v=2.0.1';
+
+// The Blueprint Lab is an internal tool: it only appears when the game is opened from this
+// computer (npm start, then open localhost:3000). The public site never shows it.
+const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]', '::1'];
+export const LAB_ENABLED = typeof location !== 'undefined' && LOCAL_HOSTS.includes(location.hostname);
 
 export function h(tag, props = {}, ...children) {
   const el = document.createElement(tag);
@@ -49,7 +54,7 @@ export function titleScreen({ save, stats, mission, version }) {
         h('button', { class: 'btn', 'data-action': 'map' }, h('span', { class: 'emo' }, '🗺️'), 'Island Map'),
         h('button', { class: 'btn', 'data-action': 'heroes' }, h('span', { class: 'emo' }, '🦸'), 'Heroes'),
         h('button', { class: 'btn', 'data-action': 'journal' }, h('span', { class: 'emo' }, '📘'), 'Power Journal'),
-        h('button', { class: 'btn', 'data-action': 'lab' }, h('span', { class: 'emo' }, '📐'), 'Blueprint Lab'),
+        LAB_ENABLED ? h('button', { class: 'btn', 'data-action': 'lab' }, h('span', { class: 'emo' }, '📐'), 'Blueprint Lab') : null,
         h('button', { class: 'btn', 'data-action': 'move' }, h('span', { class: 'emo' }, '💪'), 'Move Break'),
         h('button', { class: 'btn', 'data-action': 'breathe' }, h('span', { class: 'emo' }, '🫧'), 'Bubble Breathing'),
         h('button', { class: 'btn', 'data-action': 'family' }, h('span', { class: 'emo' }, '👨‍👩‍👧'), 'Family Play'),
@@ -169,7 +174,7 @@ export function heroesScreen({ selected }) {
       h('div', { class: 'actions' },
         h('button', { class: 'btn primary', 'data-action': 'choose-hero' }, `✔ Play as ${spec.name}`),
         h('button', { class: 'btn', 'data-action': 'hero-hello' }, '🔊 Say hi'),
-        h('button', { class: 'btn', 'data-action': 'lab-hero' }, '📐 See blueprint'))));
+        LAB_ENABLED ? h('button', { class: 'btn', 'data-action': 'lab-hero' }, '📐 See blueprint') : null)));
 }
 
 export function moveScreen({ hero, index, remaining, running }) {

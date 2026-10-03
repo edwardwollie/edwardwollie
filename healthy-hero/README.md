@@ -1,4 +1,4 @@
-# Healthy Hero 3D — v2.0.0
+# Healthy Hero 3D — v2.0.1
 
 Healthy Hero is a wellness learning game for ages 5–12 at **https://healthy.flexzonicgames.com**.
 Version 2 rebuilds the game as a full 3D experience while keeping every learning rule from v1.3.1.
@@ -10,7 +10,7 @@ Version 2 rebuilds the game as a full 3D experience while keeping every learning
 - **Run a mission** — the hero runs a three-lane track. Each of the six Power Gates asks a question from a different wellness world, and the world morphs to match the topic.
 - **Steer to answer** — tap an answer card, use A/D or the arrow keys, press 1/2/3, or swipe. W, the Up arrow, swiping up, or DASH goes early; otherwise the hero reaches the gate when the timer ends.
 - **Learn a Power Fact** — a helpful answer bursts the gate open; a miss is a gentle crash-through that shows the helpful answer. Either way the explanation is shown and read aloud before the next gate.
-- **Extras** — Power Journal (all 72 facts, discovered/mastered), Blueprint Lab (every 3D model from every side, with real measurements), 60-second Move Break (copy the hero, seated options included), Bubble Breathing (5 calm breaths), Family Play deck, and a private Grown-up View with per-topic mastery.
+- **Extras** — Power Journal (all 72 facts, discovered/mastered), 60-second Move Break (copy the hero, seated options included), Bubble Breathing (5 calm breaths), Family Play deck, and a private Grown-up View with per-topic mastery.
 
 ## Learning rules kept from v1.3.1
 
@@ -26,8 +26,12 @@ Every 3D model is generated from one spec file, `src/blueprints.js` (dimensions,
 The same file drives:
 
 - the game's models (`src/models.js`) and animation rigs (`src/rig.js`),
-- the in-game **Blueprint Lab** (`src/blueprint-render.js`: edge-detected line art, orthographic views, live cm dimensions),
-- the printable 21-sheet **blueprint book**: `blueprints/healthy-hero-3d-blueprints.pdf` (also linked from the Lab).
+- the **Blueprint Lab** (`src/blueprint-render.js`: edge-detected line art, orthographic views, live cm dimensions),
+- the printable 21-sheet **blueprint book**: `blueprints/healthy-hero-3d-blueprints.pdf`.
+
+The Blueprint Lab and the blueprint book are **internal**. The Lab only appears when the game is opened
+from `localhost` (run `npm start`, then open http://localhost:3000). The public site does not show it, the
+Docker image does not include `blueprints/` or `tools/`, and the production server returns 404 for them.
 
 Regenerate the sheets after changing a model:
 
@@ -55,7 +59,7 @@ src/engine.js, effects.js       renderer, adaptive quality, particles
 src/audio.js, narrator.js       synthesized sound + narration
 src/vendor/three.module.min.js  three.js r186 (MIT), served locally for the strict CSP
 classic/                        v1.3.1 2D game kept as a fallback (/classic/)
-blueprints/                     blueprint book PDF (+ sheet images, not deployed)
+blueprints/                     blueprint book PDF (+ sheet images; private, not deployed)
 tools/                          blueprint sheet generator and preview pages (not deployed)
 scripts/                        node --test suites
 ```
@@ -64,7 +68,7 @@ scripts/                        node --test suites
 
 ```bash
 npm test
-npm start            # http://localhost:3000
+npm start            # http://localhost:3000 (Blueprint Lab visible here only)
 ```
 
 Devices without WebGL are offered Healthy Hero Classic automatically. The Grown-up View has Motion (reduced) and 3D quality settings; quality also adapts automatically to the device's frame rate.

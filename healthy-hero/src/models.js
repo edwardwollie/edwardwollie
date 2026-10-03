@@ -1,7 +1,7 @@
 // Builds Three.js models from src/blueprints.js. Used by the game, the Blueprint Lab and
 // the printable blueprint sheet renderer, so every view is generated from one spec.
-import * as THREE from './vendor/three.module.min.js?v=2.0.0';
-import { BLUEPRINTS, expandSpec } from './blueprints.js?v=2.0.0';
+import * as THREE from './vendor/three.module.min.js?v=2.0.1';
+import { BLUEPRINTS, expandSpec } from './blueprints.js?v=2.0.1';
 
 const D2R = Math.PI / 180;
 const geometryCache = new Map();

@@ -1,6 +1,6 @@
-import { Engine } from '../src/engine.js?v=2.0.0';
-import { RunScene } from '../src/run.js?v=2.0.0';
-import { Q } from '../src/content.js?v=2.0.0';
+import { Engine } from '../src/engine.js?v=2.0.1';
+import { RunScene } from '../src/run.js?v=2.0.1';
+import { Q } from '../src/content.js?v=2.0.1';
 const p = new URLSearchParams(location.search);
 const topic = Number(p.get('topic') || 0);
 const engine = new Engine(document.getElementById('c'), { quality: p.get('q') || 'high' });

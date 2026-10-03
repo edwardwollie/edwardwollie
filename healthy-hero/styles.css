@@ -1,4 +1,4 @@
-/* Healthy Hero 3D — interface styles (v2.0.0). Fonts are self-hosted for offline play. */
+/* Healthy Hero 3D — interface styles (v2.0.1). Fonts are self-hosted for offline play. */
 @font-face { font-family: 'Baloo 2'; src: url('/assets/fonts/baloo-2-latin-600-normal.woff2') format('woff2'); font-weight: 600; font-display: swap; }
 @font-face { font-family: 'Baloo 2'; src: url('/assets/fonts/baloo-2-latin-700-normal.woff2') format('woff2'); font-weight: 700; font-display: swap; }
 @font-face { font-family: 'Baloo 2'; src: url('/assets/fonts/baloo-2-latin-800-normal.woff2') format('woff2'); font-weight: 800; font-display: swap; }
@@ -89,6 +89,7 @@ h1, h2, h3 { font-family: 'Baloo 2', 'Nunito', system-ui, sans-serif; margin: 0;
 .menu-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .menu-grid .btn { justify-content: flex-start; text-align: left; min-height: 52px; font-size: .95rem; }
 .menu-grid .btn span.emo { font-size: 1.3rem; }
+.menu-grid .btn:last-child:nth-child(odd) { grid-column: 1 / -1; } /* public build has 7 buttons (no Blueprint Lab) */
 .title-stats { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
 
 /* Map screen */
@@ -280,6 +281,7 @@ h1, h2, h3 { font-family: 'Baloo 2', 'Nunito', system-ui, sans-serif; margin: 0;
   .title-screen .brand p { display: none; }
   .btn-play { min-height: 58px; }
   .menu-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .menu-grid .btn:last-child:nth-child(odd) { grid-column: auto; }
   .menu-grid .btn { min-height: 44px; font-size: .8rem; }
 }
 @media (max-width: 560px) {
@@ -290,6 +292,7 @@ h1, h2, h3 { font-family: 'Baloo 2', 'Nunito', system-ui, sans-serif; margin: 0;
   .run-top .mission-label { display: none; }
   .run-top { justify-content: space-between; }
   .menu-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .menu-grid .btn:last-child:nth-child(odd) { grid-column: auto; }
   .menu-grid .btn { flex-direction: column; justify-content: center; text-align: center; gap: 2px; min-height: 64px; padding: 6px 2px; font-size: .68rem; line-height: 1.1; border-radius: 14px; }
   .menu-grid .btn span.emo { font-size: 1.35rem; }
   .title-menu { padding: 10px; gap: 8px; }

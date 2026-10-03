@@ -1,12 +1,12 @@
 // Wellness Island — the 3D hub. Six wedge-shaped worlds around a Heart Tower, 30 mission
 // stones on a spiral path, a hero standing on the current stone, and tappable monuments.
-import * as THREE from './vendor/three.module.min.js?v=2.0.0';
-import { BIOMES, EMBLEM_BY_TOPIC } from './blueprints.js?v=2.0.0';
-import { buildMergedProp, buildModel } from './models.js?v=2.0.0';
-import { Rig } from './rig.js?v=2.0.0';
-import { WORLDS } from './content.js?v=2.0.0';
-import { dotTexture } from './engine.js?v=2.0.0';
-import { glowSprite } from './effects.js?v=2.0.0';
+import * as THREE from './vendor/three.module.min.js?v=2.0.1';
+import { BIOMES, EMBLEM_BY_TOPIC } from './blueprints.js?v=2.0.1';
+import { buildMergedProp, buildModel } from './models.js?v=2.0.1';
+import { Rig } from './rig.js?v=2.0.1';
+import { WORLDS } from './content.js?v=2.0.1';
+import { dotTexture } from './engine.js?v=2.0.1';
+import { glowSprite } from './effects.js?v=2.0.1';
 
 const R = 20;
 const D2R = Math.PI / 180;

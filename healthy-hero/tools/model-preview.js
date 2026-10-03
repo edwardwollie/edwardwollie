@@ -1,6 +1,6 @@
-import * as THREE from '../src/vendor/three.module.min.js?v=2.0.0';
-import { buildModel, measure } from '../src/models.js?v=2.0.0';
-import { Rig } from '../src/rig.js?v=2.0.0';
+import * as THREE from '../src/vendor/three.module.min.js?v=2.0.1';
+import { buildModel, measure } from '../src/models.js?v=2.0.1';
+import { Rig } from '../src/rig.js?v=2.0.1';
 const params = new URLSearchParams(location.search);
 const ids = (params.get('ids') || 'pip,mia,leo,ginger').split(',');
 const views = (params.get('views') || 'front,left,back,threeq').split(',');

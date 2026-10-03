@@ -1,7 +1,7 @@
 services:
   healthy-hero:
     build: .
-    image: healthy-hero:2.0.0
+    image: healthy-hero:2.0.1
     container_name: healthy-hero
     restart: unless-stopped
     network_mode: bridge

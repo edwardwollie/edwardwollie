@@ -1,13 +1,13 @@
 // Stage scene: Hero Select, mission celebration, Move Break, Bubble Breathing and the
 // Blueprint Lab (blueprint line render or color, orthographic views, build animation).
-import * as THREE from './vendor/three.module.min.js?v=2.0.0';
-import { BLUEPRINTS, HERO_ORDER, EMBLEM_BY_TOPIC } from './blueprints.js?v=2.0.0';
-import { buildModel, measure } from './models.js?v=2.0.0';
-import { Rig } from './rig.js?v=2.0.0';
-import { Confetti, Bursts, fresnelMaterial, glowSprite } from './effects.js?v=2.0.0';
-import { BlueprintRenderer, VIEWS, BP, projectToPixels } from './blueprint-render.js?v=2.0.0';
-import { WORLDS } from './content.js?v=2.0.0';
-import { dotTexture } from './engine.js?v=2.0.0';
+import * as THREE from './vendor/three.module.min.js?v=2.0.1';
+import { BLUEPRINTS, HERO_ORDER, EMBLEM_BY_TOPIC } from './blueprints.js?v=2.0.1';
+import { buildModel, measure } from './models.js?v=2.0.1';
+import { Rig } from './rig.js?v=2.0.1';
+import { Confetti, Bursts, fresnelMaterial, glowSprite } from './effects.js?v=2.0.1';
+import { BlueprintRenderer, VIEWS, BP, projectToPixels } from './blueprint-render.js?v=2.0.1';
+import { WORLDS } from './content.js?v=2.0.1';
+import { dotTexture } from './engine.js?v=2.0.1';
 
 const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
 const easeOutBack = (t) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };

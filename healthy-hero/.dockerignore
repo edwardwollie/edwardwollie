@@ -4,9 +4,7 @@ node_modules
 npm-debug.log*
 scripts
 tools
-blueprints/sheets
-blueprints/web
-blueprints/*-print.pdf
+blueprints
 README.md
 INSTALL.md
 RELEASE-NOTES-*.md

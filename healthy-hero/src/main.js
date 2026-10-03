@@ -1,15 +1,15 @@
 // Healthy Hero 3D — game controller. Learning rules from v1.3.1 are preserved: 30 missions,
 // 72 encounters mixed across six topics, narration first, then a 7-second thinking grace,
 // then 30 → 22 second answer windows, gentle crash-through, and saves on this device only.
-import { speakSequence, stopSpeaking, onSpeakingChange } from './narrator.js?v=2.0.0';
-import { RUN_LENGTH, READING_GRACE_MS, approachForMission, missionEncounterIds, missionTier } from './mission-plan.js?v=2.0.0';
-import { Q, WORLDS, FAMILY, TUTORIAL, MOVES, TOPIC_FACTS } from './content.js?v=2.0.0';
-import { BLUEPRINTS, HERO_ORDER } from './blueprints.js?v=2.0.0';
-import { Engine, webglAvailable } from './engine.js?v=2.0.0';
-import * as UI from './ui.js?v=2.0.0';
-import { initAudio, sfx, setMusic, setSfx, duck, setMusicIntensity, pauseAudio, resumeAudio } from './audio.js?v=2.0.0';
+import { speakSequence, stopSpeaking, onSpeakingChange } from './narrator.js?v=2.0.1';
+import { RUN_LENGTH, READING_GRACE_MS, approachForMission, missionEncounterIds, missionTier } from './mission-plan.js?v=2.0.1';
+import { Q, WORLDS, FAMILY, TUTORIAL, MOVES, TOPIC_FACTS } from './content.js?v=2.0.1';
+import { BLUEPRINTS, HERO_ORDER } from './blueprints.js?v=2.0.1';
+import { Engine, webglAvailable } from './engine.js?v=2.0.1';
+import * as UI from './ui.js?v=2.0.1';
+import { initAudio, sfx, setMusic, setSfx, duck, setMusicIntensity, pauseAudio, resumeAudio } from './audio.js?v=2.0.1';
 
-const BUILD_VERSION = '2.0.0';
+const BUILD_VERSION = '2.0.1';
 const SAVE_KEY = 'healthy-hero-save-v1';
 const MISSION_NAMES = ['Starter Sprint', 'Power Mix-Up', 'Hero Relay', 'Vitality Circuit', 'Champion Gauntlet'];
 
@@ -372,6 +372,7 @@ async function showHeroes() {
 }
 
 async function showLab(id = labState.id) {
+  if (!UI.LAB_ENABLED) return showTitle();
   stopActivity();
   await ensureStage();
   screen = 'lab';
@@ -381,7 +382,7 @@ async function showLab(id = labState.id) {
   stage.setLabStyle(labState.style);
   stage.showLab(id);
   engine.setScene(stage);
-  mount(UI.labScreen({ ...labState, groups: (await import('./stage.js?v=2.0.0')).LAB_GROUPS }));
+  mount(UI.labScreen({ ...labState, groups: (await import('./stage.js?v=2.0.1')).LAB_GROUPS }));
   const wrap = $('#lab-dims');
   if (wrap) { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('class', 'lab-dims'); s.setAttribute('id', 'lab-svg'); wrap.replaceWith(s); }
   requestAnimationFrame(() => requestAnimationFrame(drawLabDims));
@@ -679,7 +680,7 @@ async function ensureRunScene() {
   if (runScene) return;
   showLoading('Building the Power Worlds…', 40);
   await frame();
-  const { RunScene } = await import('./run.js?v=2.0.0');
+  const { RunScene } = await import('./run.js?v=2.0.1');
   runScene = new RunScene(engine);
   setLoading('Warming up the gates…', 80);
   await precompile(runScene);
@@ -694,7 +695,7 @@ async function precompile(sc) {
 }
 async function ensureStage() {
   if (stage) return;
-  const { StageScene } = await import('./stage.js?v=2.0.0');
+  const { StageScene } = await import('./stage.js?v=2.0.1');
   stage = new StageScene(engine);
   await precompile(stage);
   stage.onPick = (d) => { if (d.kind === 'hero') { save.hero = d.id; store(); stage.selectHero(d.id); mount(UI.heroesScreen({ selected: d.id })); say(BLUEPRINTS[d.id].greeting); } };
@@ -722,7 +723,7 @@ async function boot() {
   try { await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 1500))]); } catch { /* fonts optional */ }
   setLoading('Building Wellness Island…', 45);
   await frame();
-  const { IslandScene } = await import('./island.js?v=2.0.0');
+  const { IslandScene } = await import('./island.js?v=2.0.1');
   island = new IslandScene(engine);
   await precompile(island);
   island.onPick = (d) => {
@@ -751,5 +752,5 @@ async function boot() {
   window.__ready = true;
 }
 
-if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=2.0.0').catch(() => {}));
+if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=2.0.1').catch(() => {}));
 boot();

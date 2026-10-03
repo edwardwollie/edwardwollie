@@ -13,6 +13,11 @@ const types = {
 // Fonts are self-hosted (assets/fonts) so the 3D game works fully offline.
 const csp = "default-src 'self'; img-src 'self' data:; style-src 'self'; font-src 'self'; script-src 'self'; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'";
 
+// Blueprints, tools and project docs are for local development only. The Docker image leaves
+// them out (.dockerignore) and a production server refuses them even if they are copied in.
+const production = process.env.NODE_ENV === 'production';
+const privatePath = /^\/(?:blueprints|tools|scripts)(?:\/|$)|\.md$/i;
+
 function resolveFile(pathname) {
   let decoded;
   try { decoded = decodeURIComponent(pathname); } catch { return null; }
@@ -29,6 +34,13 @@ createServer((req, res) => {
   if (url.pathname === '/healthz') {
     res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' });
     res.end('healthy-hero-ok');
+    return;
+  }
+  let path;
+  try { path = normalize(decodeURIComponent(url.pathname)); } catch { path = url.pathname; }
+  if (production && privatePath.test(path)) {
+    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
+    res.end('Not found');
     return;
   }
   const file = resolveFile(url.pathname) || join(root, 'index.html');

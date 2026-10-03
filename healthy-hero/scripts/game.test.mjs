@@ -17,7 +17,7 @@ const deploy = await read('deploy.sh');
 const styles = await read('styles.css');
 const missionPlan = await import(new URL('src/mission-plan.js', root));
 const content = await import(new URL('src/content.js', root));
-const VERSION = '2.0.0';
+const VERSION = '2.0.1';
 
 test('contains 30 missions, 72 encounters, and six complete wellness topics', () => {
   assert.match(main, /Math\.min\(index, 29\)/);
@@ -144,15 +144,15 @@ test('strict CSP friendly: no inline styles, inline scripts, or external hosts',
 test('deployment uses bridge networking, port 8121, and cache-safe versioned assets', () => {
   assert.match(compose, /network_mode: bridge/);
   assert.match(compose, /8121\}:3000/);
-  assert.match(compose, /image: healthy-hero:2\.0\.0/);
+  assert.match(compose, /image: healthy-hero:2\.0\.1/);
   assert.doesNotMatch(compose, /^networks:/m);
   assert.match(server, /no-cache, must-revalidate/);
   assert.doesNotMatch(server, /immutable/);
   assert.match(sw, /healthy-hero-v\$\{VERSION\}-3d/);
-  assert.match(sw, /const VERSION = '2\.0\.0'/);
+  assert.match(sw, /const VERSION = '2\.0\.1'/);
   assert.match(deploy, /Waiting for health check/);
   assert.match(deploy, /did not become healthy within 30 seconds/);
-  assert.match(main, /3D BUILD v|BUILD_VERSION = '2\.0\.0'/);
+  assert.match(main, /3D BUILD v|BUILD_VERSION = '2\.0\.1'/);
 });
 
 test('service worker precaches only files that exist', async () => {
@@ -169,8 +169,20 @@ test('service worker precaches only files that exist', async () => {
 
 test('classic 2D fallback ships alongside the 3D game', async () => {
   const classic = await read('classic/classic.js');
-  assert.match(classic, /from '\.\.\/src\/narrator\.js\?v=2\.0\.0'/);
+  assert.match(classic, /from '\.\.\/src\/narrator\.js\?v=2\.0\.1'/);
   assert.match(classic, /setProperty\('--lane'/);
   assert.doesNotMatch(classic.split('function render()')[1].split('function overlayHtml')[0], /style="/);
   assert.match(ui, /href: '\/classic\/'/);
+});
+
+test('Blueprint Lab is local-only and its PDF is never shipped or advertised', async () => {
+  assert.match(ui, /export const LAB_ENABLED = typeof location !== 'undefined' && LOCAL_HOSTS\.includes\(location\.hostname\)/);
+  assert.match(ui, /LAB_ENABLED \? h\('button', \{ class: 'btn', 'data-action': 'lab' \}/);
+  assert.match(ui, /LAB_ENABLED \? h\('button', \{ class: 'btn', 'data-action': 'lab-hero' \}/);
+  assert.match(main, /async function showLab[^\n]*\n\s+if \(!UI\.LAB_ENABLED\) return showTitle\(\);/);
+  assert.doesNotMatch(metadata.description, /blueprint/i);
+  assert.doesNotMatch(sw, /blueprint.*\.pdf/i);
+  const dockerignore = await read('.dockerignore');
+  assert.match(dockerignore, /^blueprints$/m);
+  assert.match(dockerignore, /^tools$/m);
 });

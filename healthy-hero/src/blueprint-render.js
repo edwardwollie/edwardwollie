@@ -2,7 +2,7 @@
 // Pass 1 writes view-space normals + linear depth, pass 2 writes a unique color per part,
 // pass 3 finds edges (silhouettes, creases, part boundaries) and draws white line art on
 // a shaded blue fill. Used by the in-game Blueprint Lab and the printable sheets.
-import * as THREE from './vendor/three.module.min.js?v=2.0.0';
+import * as THREE from './vendor/three.module.min.js?v=2.0.1';
 
 export const BP = {
   bg: '#0e3f86', bgDeep: '#0a2f68', grid: 'rgba(170,210,255,0.13)', gridMajor: 'rgba(180,220,255,0.3)',

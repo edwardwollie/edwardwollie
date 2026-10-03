@@ -2,11 +2,11 @@
 // Open tools/blueprint-sheets.html?sheet=<id> (served by server.mjs). Every drawing is
 // rendered live from src/blueprints.js through src/models.js, so the sheets always match
 // the models used in the game. tools/render-blueprints.mjs captures all sheets to PNG/PDF.
-import * as THREE from '../src/vendor/three.module.min.js?v=2.0.0';
-import { BLUEPRINTS, BIOMES, LAYOUT, DRAWING, BLUEPRINT_VERSION, HERO_ORDER, EMBLEM_BY_TOPIC, partsTable, toCm, laneX } from '../src/blueprints.js?v=2.0.0';
-import { buildModel, measure, materialSpec } from '../src/models.js?v=2.0.0';
-import { Rig } from '../src/rig.js?v=2.0.0';
-import { BlueprintRenderer, orthoCamera, perspectiveCamera, fitPerspective, projectToPixels, VIEWS, BP } from '../src/blueprint-render.js?v=2.0.0';
+import * as THREE from '../src/vendor/three.module.min.js?v=2.0.1';
+import { BLUEPRINTS, BIOMES, LAYOUT, DRAWING, BLUEPRINT_VERSION, HERO_ORDER, EMBLEM_BY_TOPIC, partsTable, toCm, laneX } from '../src/blueprints.js?v=2.0.1';
+import { buildModel, measure, materialSpec } from '../src/models.js?v=2.0.1';
+import { Rig } from '../src/rig.js?v=2.0.1';
+import { BlueprintRenderer, orthoCamera, perspectiveCamera, fitPerspective, projectToPixels, VIEWS, BP } from '../src/blueprint-render.js?v=2.0.1';
 
 const W = 3508, H = 2480;
 const PX_PER_M_AT_1 = 11811.02; // 300 dpi

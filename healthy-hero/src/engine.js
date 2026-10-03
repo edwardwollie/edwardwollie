@@ -1,7 +1,7 @@
 // Renderer, frame loop, adaptive quality and "focus rect" camera framing.
 // The canvas fills the screen behind the HTML interface; each screen tells the engine which
 // part of the screen is free, and cameras are offset so the 3D action is centered there.
-import * as THREE from './vendor/three.module.min.js?v=2.0.0';
+import * as THREE from './vendor/three.module.min.js?v=2.0.1';
 
 const QUALITY = {
   high:   { pixelRatio: 2, shadows: true, shadowMap: 1024, density: 1 },

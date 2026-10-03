@@ -1,11 +1,11 @@
 // Run-scene environment: sky, fog, lights, recycled track tiles and scenery chunks for the
 // six biomes. Each obstacle has its own topic, so the world "morphs" between biomes with a
 // sparkling wave that sweeps down the track toward the runner.
-import * as THREE from './vendor/three.module.min.js?v=2.0.0';
-import { BIOMES, LAYOUT, BLUEPRINTS, EMBLEM_BY_TOPIC } from './blueprints.js?v=2.0.0';
-import { buildMergedProp, buildModel } from './models.js?v=2.0.0';
-import { Ambient } from './effects.js?v=2.0.0';
-import { WORLDS } from './content.js?v=2.0.0';
+import * as THREE from './vendor/three.module.min.js?v=2.0.1';
+import { BIOMES, LAYOUT, BLUEPRINTS, EMBLEM_BY_TOPIC } from './blueprints.js?v=2.0.1';
+import { buildMergedProp, buildModel } from './models.js?v=2.0.1';
+import { Ambient } from './effects.js?v=2.0.1';
+import { WORLDS } from './content.js?v=2.0.1';
 
 const TILE = LAYOUT.tileLength;
 const N_TILES = 10;

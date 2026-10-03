@@ -1,6 +1,6 @@
 // Healthy Hero Classic (v1.3.1 2D) — kept as a lightweight fallback for devices without 3D.
-import { speak, stopSpeaking } from '../src/narrator.js?v=2.0.0';
-import { RUN_LENGTH, READING_GRACE_MS, approachForMission, missionEncounterIds, missionTier } from '../src/mission-plan.js?v=2.0.0';
+import { speak, stopSpeaking } from '../src/narrator.js?v=2.0.1';
+import { RUN_LENGTH, READING_GRACE_MS, approachForMission, missionEncounterIds, missionTier } from '../src/mission-plan.js?v=2.0.1';
 
 const BUILD_VERSION='1.3.1 Classic';
 const SAVE_KEY='healthy-hero-save-v1';
