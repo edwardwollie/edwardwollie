@@ -1,0 +1,12 @@
+.git
+.DS_Store
+node_modules
+npm-debug.log*
+scripts
+tools
+blueprints/sheets
+blueprints/web
+blueprints/*-print.pdf
+README.md
+INSTALL.md
+RELEASE-NOTES-*.md

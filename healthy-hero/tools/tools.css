@@ -1,0 +1,7 @@
+html,body{margin:0;background:#1d2b44;color:#fff;font:14px/1.2 system-ui,sans-serif}
+.preview #grid{display:grid;gap:6px;padding:6px}
+.cell{position:relative;background:#2a3d5e;border-radius:8px;overflow:hidden}
+.cell span{position:absolute;left:6px;top:4px;font-weight:700;font-size:12px;opacity:.85}
+.cell canvas{display:block}
+.runprev { margin: 0; overflow: hidden; }
+.runprev canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }

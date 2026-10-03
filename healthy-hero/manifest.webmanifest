@@ -1,0 +1,14 @@
+{
+  "id": "/",
+  "name": "Healthy Hero 3D",
+  "short_name": "Healthy Hero",
+  "description": "Run through six 3D Power Worlds and learn healthy habits. Choose a power lane, burst through the gate, learn a Power Fact.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#04111f",
+  "theme_color": "#10203b",
+  "categories": ["education", "games", "kids", "health"],
+  "icons": [{"src":"/assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

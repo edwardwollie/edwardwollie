@@ -1,0 +1,18 @@
+services:
+  healthy-hero:
+    build: .
+    image: healthy-hero:2.0.0
+    container_name: healthy-hero
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - "${HEALTHY_HERO_PORT:-8121}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/healthz | grep -q healthy-hero-ok"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

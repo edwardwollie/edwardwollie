@@ -1,0 +1,12 @@
+{
+  "name": "healthy-hero",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Healthy Hero 3D — a full 3D wellness learning adventure for children and families.",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test scripts/*.test.mjs"
+  },
+  "engines": { "node": ">=20" }
+}
