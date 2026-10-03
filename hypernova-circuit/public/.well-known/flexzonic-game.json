@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "hypernova-circuit",
+  "slug": "hypernova-circuit",
+  "title": "Hypernova Circuit",
+  "name": "Hypernova Circuit",
+  "shortTitle": "Hypernova",
+  "description": "Race a full-scale futuristic Grand Circuit with sweeping bends, long checkpoint sectors, drift rewards, warp lanes, rival packs, hazards, upgrades, and six rotating environments.",
+  "genre": "Futuristic Racing",
+  "category": "Racing",
+  "tagline": "Drift. Boost. Overtake. Survive the Grand Circuit.",
+  "url": "https://racer.flexzonicgames.com",
+  "coverImage": "https://racer.flexzonicgames.com/og.png",
+  "imageUrl": "https://racer.flexzonicgames.com/og.png",
+  "accentColor": "#19e6ff",
+  "accentColor2": "#ff3bbd",
+  "initials": "HC",
+  "featured": true,
+  "order": 3,
+  "version": "2.0.0",
+  "healthPath": "/healthz",
+  "gameplayTypes": [
+    "Racing",
+    "Arcade",
+    "Endless"
+  ],
+  "controls": [
+    "keyboard",
+    "touch"
+  ],
+  "supportsTouch": true,
+  "supportsKeyboard": true,
+  "offlineReady": true,
+  "features": [
+    "Grand Circuit",
+    "Curved raceway",
+    "Drift rewards",
+    "Warp lanes",
+    "Rival packs",
+    "Car upgrades",
+    "Offline play"
+  ]
+}
