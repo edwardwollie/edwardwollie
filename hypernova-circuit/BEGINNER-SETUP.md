@@ -96,7 +96,7 @@ docker compose up -d --force-recreate
 
 ## Updating the game
 
-Upload a newer ZIP, extract it over `/opt/hypernova-circuit`, and run:
+To upgrade an existing install to a new release, follow `INSTALL.md` (it keeps a rollback copy). For a quick manual update, extract a newer ZIP over `/opt/hypernova-circuit` and run:
 
 ```bash
 cd /opt/hypernova-circuit

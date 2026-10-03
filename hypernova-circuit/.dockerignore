@@ -9,3 +9,6 @@ npm-debug.log*
 .env
 .env.*
 !.env.example
+blueprints
+tests
+.test-build

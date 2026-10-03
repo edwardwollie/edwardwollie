@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { createBlueprintModel, type BlueprintAssetId } from "./blueprint-mesh";
 import {
   effectiveStats,
   type CarSpec,
@@ -112,6 +113,8 @@ function disposeObject(root: THREE.Object3D): void {
     if (!(object instanceof THREE.Mesh) && !(object instanceof THREE.Points)) {
       return;
     }
+    // Blueprint geometry and materials are cached and shared between models.
+    if (object.userData.shared) return;
     object.geometry?.dispose();
     const materials = Array.isArray(object.material)
       ? object.material
@@ -804,89 +807,22 @@ export class HypernovaEngine {
     car: CarSpec,
     includeShield = false,
   ): THREE.Group {
+    // The endless mode now drives the exact Grand Prix blueprint models. They
+    // face +Z and are 5 m long, so they are turned around and scaled to fit
+    // the 4.15 m lanes of the classic run.
     const group = new THREE.Group();
-    const bodyMaterial = new THREE.MeshPhysicalMaterial({
-      color: car.primary,
-      emissive: new THREE.Color(car.primary).multiplyScalar(0.24),
-      emissiveIntensity: 1.15,
-      metalness: 0.82,
-      roughness: 0.2,
-      clearcoat: 0.9,
-      clearcoatRoughness: 0.12,
-    });
-    const accentMaterial = new THREE.MeshStandardMaterial({
-      color: car.secondary,
-      emissive: car.secondary,
-      emissiveIntensity: 2.2,
-      metalness: 0.65,
-      roughness: 0.22,
-    });
-    const glassMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0x061829,
-      emissive: 0x063b5b,
-      emissiveIntensity: 0.6,
-      transmission: 0.32,
-      transparent: true,
-      opacity: 0.87,
-      metalness: 0.25,
-      roughness: 0.08,
-    });
-
-    const body = new THREE.Mesh(
-      new THREE.BoxGeometry(1.45, 0.36, 2.8),
-      bodyMaterial,
-    );
-    body.position.y = 0.18;
-    body.castShadow = true;
-    group.add(body);
-
-    const nose = new THREE.Mesh(
-      new THREE.ConeGeometry(0.74, 1.75, 4),
-      bodyMaterial,
-    );
-    nose.rotation.x = Math.PI / 2;
-    nose.rotation.y = Math.PI / 4;
-    nose.position.set(0, 0.13, -1.7);
-    nose.scale.set(1.05, 1, 0.72);
-    nose.castShadow = true;
-    group.add(nose);
-
-    const canopy = new THREE.Mesh(
-      new THREE.SphereGeometry(0.58, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2),
-      glassMaterial,
-    );
-    canopy.scale.set(0.9, 0.72, 1.35);
-    canopy.position.set(0, 0.37, -0.05);
-    canopy.castShadow = true;
-    group.add(canopy);
-
-    const wing = new THREE.Mesh(
-      new THREE.BoxGeometry(2.65, 0.1, 0.82),
-      bodyMaterial,
-    );
-    wing.position.set(0, 0.08, 0.47);
-    wing.rotation.x = -0.04;
-    group.add(wing);
+    const model = createBlueprintModel(car.id as BlueprintAssetId, {
+      primary: car.primary,
+      secondary: car.secondary,
+    }, { castShadow: true });
+    model.rotation.y = Math.PI;
+    model.scale.setScalar(0.68);
+    model.position.y = -0.5;
+    group.add(model);
 
     for (const side of [-1, 1]) {
-      const fin = new THREE.Mesh(
-        new THREE.BoxGeometry(0.16, 0.34, 1.7),
-        accentMaterial,
-      );
-      fin.position.set(side * 1.14, 0.16, 0.25);
-      fin.rotation.z = side * -0.22;
-      group.add(fin);
-
-      const thruster = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.16, 0.25, 0.55, 12),
-        accentMaterial,
-      );
-      thruster.rotation.x = Math.PI / 2;
-      thruster.position.set(side * 0.53, 0.08, 1.55);
-      group.add(thruster);
-
       const trail = new THREE.Mesh(
-        new THREE.ConeGeometry(0.24, 2.2, 12, 1, true),
+        new THREE.ConeGeometry(0.2, 2.2, 12, 1, true),
         new THREE.MeshBasicMaterial({
           color: car.secondary,
           transparent: true,
@@ -896,71 +832,9 @@ export class HypernovaEngine {
         }),
       );
       trail.rotation.x = -Math.PI / 2;
-      trail.position.set(side * 0.53, 0.08, 2.8);
+      trail.position.set(side * 0.36, -0.1, 2.75);
       group.add(trail);
       if (includeShield) this.playerTrails.push(trail);
-    }
-
-    const centerStripe = new THREE.Mesh(
-      new THREE.BoxGeometry(0.18, 0.04, 2.9),
-      accentMaterial,
-    );
-    centerStripe.position.set(0, 0.39, 0.02);
-    group.add(centerStripe);
-
-    // Every machine now has a silhouette cue, not just a different paint job.
-    if (car.id === "pulse") {
-      const dorsal = new THREE.Mesh(
-        new THREE.BoxGeometry(0.16, 0.55, 1.25),
-        accentMaterial,
-      );
-      dorsal.position.set(0, 0.49, 0.58);
-      dorsal.rotation.x = -0.12;
-      group.add(dorsal);
-    } else if (car.id === "vortex") {
-      for (const side of [-1, 1]) {
-        const blade = new THREE.Mesh(
-          new THREE.BoxGeometry(0.12, 0.2, 2.25),
-          accentMaterial,
-        );
-        blade.position.set(side * 1.46, 0.22, 0.28);
-        blade.rotation.y = side * 0.16;
-        blade.rotation.z = side * -0.28;
-        group.add(blade);
-      }
-    } else if (car.id === "solar") {
-      const intake = new THREE.Mesh(
-        new THREE.TorusGeometry(0.45, 0.11, 10, 28),
-        accentMaterial,
-      );
-      intake.rotation.x = Math.PI / 2;
-      intake.position.set(0, 0.12, -1.94);
-      group.add(intake);
-      for (const side of [-1, 1]) {
-        const booster = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.22, 0.3, 0.9, 12),
-          accentMaterial,
-        );
-        booster.rotation.x = Math.PI / 2;
-        booster.position.set(side * 0.92, 0.08, 1.58);
-        group.add(booster);
-      }
-    } else if (car.id === "prism") {
-      for (const side of [-1, 1]) {
-        const armorPod = new THREE.Mesh(
-          new THREE.BoxGeometry(0.62, 0.46, 1.65),
-          bodyMaterial,
-        );
-        armorPod.position.set(side * 1.12, 0.2, 0.34);
-        armorPod.rotation.z = side * 0.12;
-        group.add(armorPod);
-      }
-      const prismCore = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.3, 0),
-        accentMaterial,
-      );
-      prismCore.position.set(0, 0.62, 0.18);
-      group.add(prismCore);
     }
 
     if (includeShield) {
@@ -1074,137 +948,45 @@ export class HypernovaEngine {
     );
   }
 
-  private createCoin(lane: number, z: number): Entity {
+  /** Encounter props are the exact blueprint models (road surface at Y = 0). */
+  private blueprintEntity(
+    kind: EntityKind,
+    asset: BlueprintAssetId,
+    lane: number,
+    z: number,
+    radius: number,
+    damage: number,
+    speedFactor = 1,
+  ): Entity {
     const group = new THREE.Group();
-    const material = new THREE.MeshStandardMaterial({
-      color: 0xffd84d,
-      emissive: 0xff9b16,
-      emissiveIntensity: 3.3,
-      metalness: 0.78,
-      roughness: 0.18,
-    });
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.43, 0.13, 10, 22), material);
-    const core = new THREE.Mesh(
-      new THREE.OctahedronGeometry(0.22, 0),
-      new THREE.MeshBasicMaterial({ color: 0xfff5a8 }),
-    );
-    group.add(ring, core);
-    group.position.set(LANE_X[lane], 1.05, z);
+    group.add(createBlueprintModel(asset));
+    group.position.set(LANE_X[lane], 0, z);
     return {
-      kind: "coin",
+      kind,
       group,
-      radius: 0.82,
-      damage: 0,
+      radius,
+      damage,
       phase: Math.random() * Math.PI * 2,
-      speedFactor: 1,
+      speedFactor,
       passed: false,
       laneX: LANE_X[lane],
     };
+  }
+
+  private createCoin(lane: number, z: number): Entity {
+    return this.blueprintEntity("coin", "coin", lane, z, 0.82, 0);
   }
 
   private createBarrier(lane: number, z: number): Entity {
-    const group = new THREE.Group();
-    const bodyMaterial = new THREE.MeshStandardMaterial({
-      color: 0x5a123e,
-      emissive: 0xff176f,
-      emissiveIntensity: 2.7,
-      metalness: 0.76,
-      roughness: 0.28,
-    });
-    const stripeMaterial = new THREE.MeshBasicMaterial({ color: 0xffee55 });
-    const body = new THREE.Mesh(
-      new THREE.BoxGeometry(2.45, 0.92, 0.62),
-      bodyMaterial,
-    );
-    body.position.y = 0.58;
-    group.add(body);
-    for (const x of [-0.72, 0, 0.72]) {
-      const stripe = new THREE.Mesh(
-        new THREE.BoxGeometry(0.26, 0.62, 0.07),
-        stripeMaterial,
-      );
-      stripe.position.set(x, 0.58, 0.35);
-      stripe.rotation.z = -0.42;
-      group.add(stripe);
-    }
-    group.position.set(LANE_X[lane], 0, z);
-    return {
-      kind: "barrier",
-      group,
-      radius: 1.25,
-      damage: 38,
-      phase: Math.random() * 5,
-      speedFactor: 1,
-      passed: false,
-      laneX: LANE_X[lane],
-    };
+    return this.blueprintEntity("barrier", "barrier", lane, z, 1.25, 38);
   }
 
   private createMine(lane: number, z: number): Entity {
-    const group = new THREE.Group();
-    const material = new THREE.MeshStandardMaterial({
-      color: 0x273a0e,
-      emissive: 0xa8ff3e,
-      emissiveIntensity: 3.5,
-      metalness: 0.56,
-      roughness: 0.3,
-    });
-    const mine = new THREE.Mesh(new THREE.IcosahedronGeometry(0.66, 1), material);
-    group.add(mine);
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(0.88, 0.055, 8, 28),
-      new THREE.MeshBasicMaterial({
-        color: 0xffee55,
-        transparent: true,
-        opacity: 0.8,
-      }),
-    );
-    ring.rotation.x = Math.PI / 2;
-    group.add(ring);
-    group.position.set(LANE_X[lane], 0.74, z);
-    return {
-      kind: "mine",
-      group,
-      radius: 0.95,
-      damage: 46,
-      phase: Math.random() * 5,
-      speedFactor: 1,
-      passed: false,
-      laneX: LANE_X[lane],
-    };
+    return this.blueprintEntity("mine", "mine", lane, z, 0.95, 46);
   }
 
   private createDrone(lane: number, z: number): Entity {
-    const group = new THREE.Group();
-    const material = new THREE.MeshStandardMaterial({
-      color: 0x5b250b,
-      emissive: 0xff8a1f,
-      emissiveIntensity: 3,
-      metalness: 0.82,
-      roughness: 0.18,
-    });
-    const core = new THREE.Mesh(new THREE.OctahedronGeometry(0.62, 1), material);
-    group.add(core);
-    for (const side of [-1, 1]) {
-      const wing = new THREE.Mesh(
-        new THREE.BoxGeometry(1.25, 0.12, 0.52),
-        material,
-      );
-      wing.position.x = side * 0.82;
-      wing.rotation.z = side * 0.2;
-      group.add(wing);
-    }
-    group.position.set(LANE_X[lane], 1.18, z);
-    return {
-      kind: "drone",
-      group,
-      radius: 1.2,
-      damage: 34,
-      phase: Math.random() * Math.PI * 2,
-      speedFactor: 1.06,
-      passed: false,
-      laneX: LANE_X[lane],
-    };
+    return this.blueprintEntity("drone", "drone", lane, z, 1.2, 34, 1.06);
   }
 
   private createRival(lane: number, z: number): Entity {
@@ -1222,7 +1004,7 @@ export class HypernovaEngine {
       },
       false,
     );
-    rival.scale.setScalar(0.82);
+    rival.scale.setScalar(0.9);
     rival.position.set(LANE_X[lane], 0.62, z);
     return {
       kind: "rival",
@@ -1237,120 +1019,17 @@ export class HypernovaEngine {
   }
 
   private createNitro(lane: number, z: number): Entity {
-    const group = new THREE.Group();
-    const material = new THREE.MeshStandardMaterial({
-      color: 0x0c66bd,
-      emissive: 0x19e6ff,
-      emissiveIntensity: 4,
-      metalness: 0.65,
-      roughness: 0.2,
-    });
-    const crystal = new THREE.Mesh(
-      new THREE.OctahedronGeometry(0.66, 0),
-      material,
-    );
-    crystal.scale.y = 1.35;
-    group.add(crystal);
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(0.9, 0.04, 8, 32),
-      new THREE.MeshBasicMaterial({ color: 0xd9ffff }),
-    );
-    ring.rotation.x = Math.PI / 2;
-    group.add(ring);
-    group.position.set(LANE_X[lane], 1.12, z);
-    return {
-      kind: "nitro",
-      group,
-      radius: 0.95,
-      damage: 0,
-      phase: Math.random() * 5,
-      speedFactor: 1,
-      passed: false,
-      laneX: LANE_X[lane],
-    };
+    return this.blueprintEntity("nitro", "nitro", lane, z, 0.95, 0);
   }
 
   private createRepair(lane: number, z: number): Entity {
-    const group = new THREE.Group();
-    const material = new THREE.MeshStandardMaterial({
-      color: 0x286714,
-      emissive: 0xa8ff3e,
-      emissiveIntensity: 3.6,
-      metalness: 0.42,
-      roughness: 0.24,
-    });
-    const vertical = new THREE.Mesh(
-      new THREE.BoxGeometry(0.34, 1.25, 0.3),
-      material,
-    );
-    const horizontal = new THREE.Mesh(
-      new THREE.BoxGeometry(1.25, 0.34, 0.3),
-      material,
-    );
-    group.add(vertical, horizontal);
-    group.position.set(LANE_X[lane], 1.05, z);
-    return {
-      kind: "repair",
-      group,
-      radius: 0.9,
-      damage: 0,
-      phase: Math.random() * 5,
-      speedFactor: 1,
-      passed: false,
-      laneX: LANE_X[lane],
-    };
+    return this.blueprintEntity("repair", "repair", lane, z, 0.9, 0);
   }
 
   private createBoostPad(lane: number, z: number): Entity {
-    const group = new THREE.Group();
-    const frame = new THREE.Mesh(
-      new THREE.BoxGeometry(2.75, 0.07, 5.6),
-      new THREE.MeshStandardMaterial({
-        color: 0x082f45,
-        emissive: 0x19e6ff,
-        emissiveIntensity: 3.8,
-        metalness: 0.72,
-        roughness: 0.18,
-      }),
-    );
-    frame.position.y = 0.05;
-    group.add(frame);
-    const stripeMaterial = new THREE.MeshBasicMaterial({
-      color: 0xf4ffff,
-      transparent: true,
-      opacity: 0.92,
-    });
-    for (let index = -2; index <= 2; index += 1) {
-      const stripe = new THREE.Mesh(
-        new THREE.BoxGeometry(1.7, 0.025, 0.12),
-        stripeMaterial,
-      );
-      stripe.position.set(0, 0.095, index * 0.82);
-      stripe.rotation.y = -0.34;
-      group.add(stripe);
-    }
-    const halo = new THREE.Mesh(
-      new THREE.TorusGeometry(1.45, 0.045, 8, 36),
-      new THREE.MeshBasicMaterial({
-        color: 0x8df8ff,
-        transparent: true,
-        opacity: 0.75,
-      }),
-    );
-    halo.rotation.x = Math.PI / 2;
-    halo.position.y = 0.12;
-    group.add(halo);
-    group.position.set(LANE_X[lane], 0, z);
-    return {
-      kind: "boost-pad",
-      group,
-      radius: 1.22,
-      damage: 0,
-      phase: Math.random() * 5,
-      speedFactor: 1,
-      passed: false,
-      laneX: LANE_X[lane],
-    };
+    const entity = this.blueprintEntity("boost-pad", "boostPad", lane, z, 1.22, 0);
+    entity.group.scale.set(0.9, 1, 0.95);
+    return entity;
   }
 
   private addEntity(entity: Entity): void {
@@ -1367,8 +1046,7 @@ export class HypernovaEngine {
       let weave = 0;
       if (entity.kind === "coin") {
         entity.group.rotation.y += delta * 4.4;
-        entity.group.rotation.z += delta * 1.2;
-        entity.group.position.y = 1.05 + Math.sin(entity.phase * 4) * 0.12;
+        entity.group.position.y = Math.sin(entity.phase * 4) * 0.12;
         const magnetDistance = this.stats.magnetRadius * 4.2;
         const dz = entity.group.position.z - PLAYER_Z;
         const localDx = entity.laneX - this.playerX;
@@ -1381,9 +1059,8 @@ export class HypernovaEngine {
         }
       } else if (entity.kind === "mine") {
         entity.group.rotation.y += delta * 2.8;
-        entity.group.rotation.x += delta * 1.5;
       } else if (entity.kind === "drone") {
-        entity.group.position.y = 1.18 + Math.sin(entity.phase * 4.2) * 0.28;
+        entity.group.position.y = Math.sin(entity.phase * 4.2) * 0.28;
         entity.group.rotation.y += delta * 2.2;
         weave = Math.sin(entity.phase * 1.45) * 0.26;
       } else if (entity.kind === "rival") {
@@ -1392,16 +1069,7 @@ export class HypernovaEngine {
         entity.group.rotation.y = this.roadYawAtZ(entity.group.position.z);
       } else if (entity.kind === "nitro" || entity.kind === "repair") {
         entity.group.rotation.y += delta * 2.8;
-        entity.group.position.y = 1.05 + Math.sin(entity.phase * 3.8) * 0.16;
-      } else if (entity.kind === "boost-pad") {
-        entity.group.children.forEach((child, childIndex) => {
-          if (child instanceof THREE.Mesh && childIndex > 0) {
-            const material = child.material as THREE.MeshBasicMaterial;
-            if (material.opacity !== undefined) {
-              material.opacity = 0.58 + Math.sin(entity.phase * 7 + childIndex) * 0.28;
-            }
-          }
-        });
+        entity.group.position.y = Math.sin(entity.phase * 3.8) * 0.16;
       }
 
       entity.group.position.x =

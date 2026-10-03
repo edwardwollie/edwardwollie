@@ -1,4 +1,4 @@
-const CACHE_NAME = "hypernova-circuit-v2.0.0";
+const CACHE_NAME = "hypernova-circuit-v3.0.0";
 const CORE_FILES = ["/", "/manifest.webmanifest", "/favicon.svg", "/version.json"];
 
 self.addEventListener("install", (event) => {

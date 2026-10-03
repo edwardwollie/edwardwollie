@@ -40,3 +40,5 @@ next-env.d.ts
 /.sites-runtime/
 /outputs/
 /work/
+.test-build/
+__pycache__/

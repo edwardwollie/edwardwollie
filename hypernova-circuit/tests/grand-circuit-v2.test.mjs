@@ -35,16 +35,17 @@ test('drift rewards are implemented without adding another required control', ()
   assert.match(engine, /type: "drift"/);
   assert.match(game, /DRIFT CHARGE/);
   assert.match(game, /HARD STEER AT SPEED TO DRIFT/);
+  assert.match(game, /TAP BRAKE \(S\) IN A TURN TO DRIFT/);
 });
 
-test('cars have model-specific silhouette geometry', () => {
-  for (const id of ['pulse','vortex','solar','prism']) {
-    assert.match(engine, new RegExp(`car\\.id === "${id}"`));
+test('endless storm drives the blueprint car and prop models', () => {
+  assert.match(engine, /createBlueprintModel\(car\.id as BlueprintAssetId/);
+  for (const asset of ['coin','barrier','mine','drone','nitro','repair','boostPad']) {
+    assert.ok(engine.includes(`"${asset}"`), asset);
   }
 });
 
 test('portal metadata advertises the upgraded racing systems', () => {
-  assert.equal(manifest.version, '2.0.0');
   assert.equal(manifest.category, 'Racing');
   assert.ok(manifest.features.includes('Grand Circuit'));
   assert.ok(manifest.features.includes('Curved raceway'));

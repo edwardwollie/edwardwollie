@@ -75,6 +75,36 @@ export class HypernovaAudio {
     this.tone(190, 0.09, "square", 0.055, 460);
   }
 
+  countdown(value: number): void {
+    this.tone(value > 0 ? 440 : 880, value > 0 ? 0.18 : 0.42, "square", 0.09);
+  }
+
+  lap(final: boolean): void {
+    const notes = final ? [523, 659, 784, 1047] : [523, 784];
+    notes.forEach((frequency, index) => {
+      window.setTimeout(() => this.tone(frequency, 0.14, "triangle", 0.12), index * 85);
+    });
+  }
+
+  finish(position: number): void {
+    const notes = position <= 3 ? [523, 659, 784, 1047, 1319] : [392, 494, 587];
+    notes.forEach((frequency, index) => {
+      window.setTimeout(() => this.tone(frequency, 0.22, "triangle", 0.13), index * 120);
+    });
+  }
+
+  scrape(): void {
+    this.tone(140 + Math.random() * 60, 0.12, "sawtooth", 0.07, 70);
+  }
+
+  bump(): void {
+    this.tone(110, 0.16, "square", 0.13, 55);
+  }
+
+  boost(): void {
+    this.tone(220, 0.35, "sawtooth", 0.08, 880);
+  }
+
   dispose(): void {
     this.engineOscillator?.stop();
     void this.context?.close();

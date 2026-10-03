@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const title = "Hypernova Circuit | Futuristic Racing";
+const title = "Hypernova Circuit | Full 3D Grand Prix Racing";
 const description =
-  "Race a full-scale futuristic Grand Circuit with sweeping bends, long checkpoint sectors, drift rewards, warp lanes, rivals, hazards, and upgradeable hovercars.";
+  "Race a full 3D hovercar Grand Prix: six circuits with hills, banked bends, tunnels and a figure-eight bridge, seven AI rivals, slipstream, drifting, ghost laps and upgradeable cars.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://racer.flexzonicgames.com"),

@@ -1,6 +1,7 @@
 services:
   hypernova-racer:
     build: .
+    image: hypernova-racer:3.0.0
     container_name: hypernova-racer
     restart: unless-stopped
     init: true

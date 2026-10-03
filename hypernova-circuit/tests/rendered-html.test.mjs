@@ -26,9 +26,11 @@ test("renders the finished Hypernova Circuit experience", async () => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
-  assert.match(html, /Hypernova Circuit \| Futuristic Racing/i);
-  assert.match(html, /OUTRUN THE/i);
-  assert.match(html, /GARAGE &amp; UPGRADES/i);
+  assert.match(html, /Hypernova Circuit \| Full 3D Grand Prix Racing/i);
+  assert.match(html, /RACE THE/i);
+  assert.match(html, /HYPERNOVA GRAND PRIX/i);
+  assert.match(html, /ENDLESS STORM/i);
+  assert.match(html, /GARAGE &amp; SHOWROOM/i);
   assert.doesNotMatch(html, /codex-preview/i);
 });
 
@@ -55,4 +57,19 @@ test("ships valid portal discovery metadata and PWA configuration", async () => 
   assert.equal(metadata.url, "https://racer.flexzonicgames.com");
   assert.equal(manifest.display, "fullscreen");
   assert.equal(manifest.start_url, "/");
+});
+
+test("production bundle hides the internal blueprint wireframe toggle", async () => {
+  const { readdir } = await import("node:fs/promises");
+  const dir = new URL("../dist/client/assets/", import.meta.url);
+  const files = (await readdir(dir)).filter((f) => f.endsWith(".js"));
+  let found = false;
+  for (const f of files) {
+    const js = await readFile(new URL(f, dir), "utf8");
+    if (js.includes("SELECT CIRCUIT")) {
+      found = true;
+      assert.doesNotMatch(js, /"BLUEPRINT"|>BLUEPRINT</);
+    }
+  }
+  assert.ok(found, "game bundle located");
 });

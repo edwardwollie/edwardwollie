@@ -1,7 +1,7 @@
 {
   "name": "Hypernova Circuit",
   "short_name": "Hypernova",
-  "description": "A full-scale futuristic Grand Circuit racing game with sweeping bends, drift rewards, rival packs and warp lanes.",
+  "description": "A full 3D hovercar Grand Prix with six circuits, AI rivals, slipstream, drifting and ghost laps.",
   "start_url": "/",
   "display": "fullscreen",
   "background_color": "#050316",

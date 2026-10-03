@@ -1,3 +1,5 @@
+import { sanitizeGrandPrix, type GrandPrixSave } from "./grand-prix";
+
 export type CarId = "pulse" | "vortex" | "solar" | "prism";
 export type UpgradeId = "engine" | "handling" | "shield" | "magnet";
 
@@ -130,6 +132,9 @@ export type SaveData = {
   totalCoins: number;
   totalRuns: number;
   dailyClaimDate: string;
+  /** Grand Prix records per circuit (added in 3.0; absent in older saves). */
+  grandPrix: GrandPrixSave;
+  graphics: "auto" | "high" | "low";
 };
 
 export const SAVE_KEY = "hypernova-circuit-save-v1";
@@ -146,6 +151,8 @@ export function createDefaultSave(): SaveData {
     totalCoins: 0,
     totalRuns: 0,
     dailyClaimDate: "",
+    grandPrix: {},
+    graphics: "auto",
   };
 }
 
@@ -195,6 +202,11 @@ export function sanitizeSave(value: unknown): SaveData {
       typeof candidate.dailyClaimDate === "string"
         ? candidate.dailyClaimDate.slice(0, 10)
         : "",
+    grandPrix: sanitizeGrandPrix(candidate.grandPrix),
+    graphics:
+      candidate.graphics === "high" || candidate.graphics === "low"
+        ? candidate.graphics
+        : "auto",
   };
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "hypernova-racer",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -10,10 +10,11 @@
     "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vite",
     "build": "bash scripts/build-verified.sh",
     "start": "WRANGLER_WRITE_LOGS=false WRANGLER_LOG_PATH=/tmp/wrangler.log vinext start",
-    "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "test": "npm run build && node --test tests/grand-prix-v3.test.mjs tests/grand-circuit-v2.test.mjs tests/rendered-html.test.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.game.json",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
-    "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate"
+    "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
+    "blueprints": "cd blueprints && python3 design_model.py && python3 design_tracks.py && python3 render_blueprints.py && python3 export_glb.py && python3 make_atlas_pdf.py"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
@@ -39,7 +40,8 @@
     "typescript": "5.9.3",
     "vinext": "0.0.50",
     "vite": "8.0.13",
-    "wrangler": "4.92.0"
+    "wrangler": "4.92.0",
+    "esbuild": "0.28.0"
   },
   "type": "module",
   "displayName": "Hypernova Circuit"
