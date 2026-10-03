@@ -1,0 +1,143 @@
+import { hex } from "../../core/color.ts";
+import type { AnimalBlueprint } from "../types.ts";
+import { S, T } from "./kit.ts";
+
+// A-06 · American Bison bull — reference specimen: prime bull, 1.86 m at the hump.
+const HB = hex("#231d19"), HT = hex("#4a4038");
+export const BISON: AnimalBlueprint = {
+  id: "bison", drawing: "A-06", title: "American Bison", subtitle: "Bison bison · prime bull",
+  category: "wildlife", rev: "C", scale: "1:20",
+  overall: { length: 3.0, width: 1.0, height: 1.9 },
+  notes: [
+    "Front-heavy frame: the hump (long thoracic spines) peaks just behind the shoulders at 1.86 m.",
+    "Head carried low; dense mop of hair on the forehead, chin beard, shaggy 'chaps' on the forelegs.",
+    "Both sexes carry short upturned horns; the bull's are heavier with a wider base.",
+  ],
+  species: "Bison", maleName: "Bull", femaleName: "Cow", femaleScale: 0.8, femaleHasHeadgear: true,
+  bones: [
+    { name: "root", parent: null, p: [0, 0, 0] },
+    { name: "hips", parent: "root", p: [0, 1.24, -0.95] },
+    { name: "spine", parent: "hips", p: [0, 1.28, -0.35] },
+    { name: "chest", parent: "spine", p: [0, 1.30, 0.30] },
+    { name: "neck1", parent: "chest", p: [0, 1.20, 0.78] },
+    { name: "neck2", parent: "neck1", p: [0, 1.05, 0.98] },
+    { name: "head", parent: "neck2", p: [0, 0.92, 1.14] },
+    { name: "earL", parent: "head", p: [0.17, 0.98, 1.14] },
+    { name: "earR", parent: "head", p: [-0.17, 0.98, 1.14] },
+    { name: "tail1", parent: "hips", p: [0, 1.36, -1.29] },
+    { name: "tail2", parent: "tail1", p: [0, 1.15, -1.33] },
+  ],
+  body: [
+    T(-1.30, 1.36, 1.26, 0.03, -0.55, "hips"),
+    T(-1.26, 1.42, 1.14, 0.15, -0.42, "hips"),
+    T(-1.15, 1.48, 1.02, 0.24, -0.25, "hips"),
+    T(-0.95, 1.52, 0.92, 0.30, -0.08, "hips"),
+    T(-0.65, 1.56, 0.82, 0.36, 0.0, "spine"),
+    T(-0.30, 1.66, 0.76, 0.40, 0.05, "spine"),
+    T(0.00, 1.80, 0.72, 0.42, 0.08, "chest"),
+    T(0.25, 1.86, 0.70, 0.41, 0.06, "chest"),
+    T(0.50, 1.80, 0.70, 0.37, 0.0, "chest"),
+    T(0.72, 1.62, 0.74, 0.32, -0.12, "chest"),
+    S(0.90, 1.10, 0.40, 0.36, 0.29, -0.30, "neck1", "neck"),
+    S(1.05, 0.98, 0.32, 0.30, 0.25, -0.45, "neck2", "neck"),
+    S(1.18, 0.88, 0.26, 0.25, 0.22, -0.75, "head", "head"),
+    S(1.27, 0.76, 0.21, 0.20, 0.19, -0.95, "head", "head"),
+    S(1.34, 0.64, 0.16, 0.15, 0.15, -1.05, "head", "head"),
+    S(1.39, 0.53, 0.12, 0.115, 0.12, -1.10, "head", "head"),
+    S(1.42, 0.45, 0.095, 0.09, 0.10, -1.10, "head", "head"),
+    S(1.435, 0.41, 0.02, 0.02, 0.02, -1.10, "head", "head"),
+  ],
+  tail: {
+    keys: [
+      S(-1.29, 1.36, 0.035, 0.035, 0.04, -1.2, "tail1", "tail"),
+      S(-1.325, 1.24, 0.028, 0.028, 0.032, -1.45, "tail1", "tail"),
+      S(-1.345, 1.04, 0.022, 0.022, 0.026, -1.52, "tail2", "tail"),
+      S(-1.35, 0.90, 0.05, 0.05, 0.05, -1.57, "tail2", "tail"),
+      S(-1.352, 0.83, 0.01, 0.01, 0.01, -1.57, "tail2", "tail"),
+    ],
+    color: hex("#3a2a20"), tip: hex("#1a130f"),
+  },
+  appendages: [{
+    name: "beard", color: hex("#22180f"), segs: 12,
+    keys: [
+      S(1.26, 0.70, 0.06, 0.06, 0.07, -1.57, "head", "head"),
+      S(1.25, 0.56, 0.07, 0.06, 0.09, -1.57, "head", "head"),
+      S(1.235, 0.44, 0.055, 0.05, 0.07, -1.6, "head", "head"),
+      S(1.225, 0.36, 0.03, 0.03, 0.04, -1.62, "head", "head"),
+      S(1.22, 0.33, 0.008, 0.008, 0.008, -1.62, "head", "head"),
+    ],
+  }],
+  legs: [
+    {
+      id: "F", parent: "chest", bones: ["humerus", "radius", "metacarpus", "pastern"],
+      joints: [
+        { p: [0.14, 1.12, 0.40], r: 0.16, rz: 0.14 },
+        { p: [0.21, 0.80, 0.28], r: 0.15, rz: 0.13 },
+        { p: [0.20, 0.42, 0.31], r: 0.065, rz: 0.058 },
+        { p: [0.20, 0.15, 0.32], r: 0.055, rz: 0.05 },
+        { p: [0.20, 0.075, 0.36], r: 0.05, rz: 0.046 },
+      ],
+      hoof: { len: 0.14, w: 0.12, h: 0.075, split: true, dewclaw: false, color: hex("#1d1916") },
+    },
+    {
+      id: "H", parent: "hips", bones: ["femur", "tibia", "metatarsus", "pastern_h"],
+      joints: [
+        { p: [0.14, 1.17, -0.95], r: 0.20, rz: 0.16 },
+        { p: [0.21, 0.82, -0.76], r: 0.17, rz: 0.13 },
+        { p: [0.20, 0.55, -1.10], r: 0.07, rz: 0.058 },
+        { p: [0.20, 0.15, -1.05], r: 0.055, rz: 0.05 },
+        { p: [0.20, 0.075, -1.01], r: 0.05, rz: 0.046 },
+      ],
+      hoof: { len: 0.135, w: 0.115, h: 0.075, split: true, dewclaw: false, color: hex("#1d1916") },
+    },
+  ],
+  ears: { base: [0.17, 0.98, 1.14], dir: [0.9, 0.0, -0.35], len: 0.10, wid: 0.07, cup: 0.01, outer: hex("#2a1d15"), inner: hex("#3a2a20") },
+  eyes: { p: [0.16, 0.82, 1.25], r: 0.022 },
+  nose: { p: [0, 0.44, 1.44], r: [0.09, 0.06, 0.04], color: hex("#1a1512") },
+  headgear: [{
+    kind: "horn", bone: "head", base: [0.18, 0.98, 1.16], splay: 0, rake: 0,
+    tubes: [{ pts: [[0, 0, 0], [0.08, 0.02, 0.02], [0.14, 0.08, 0.03], [0.16, 0.16, 0.02], [0.15, 0.22, 0.0]], r0: 0.05, r1: 0.012, colorBase: HB, colorTip: HT }],
+  }],
+  headgearFemale: [{
+    kind: "horn", bone: "head", base: [0.17, 0.98, 1.16], splay: 0, rake: 0,
+    tubes: [{ pts: [[0, 0, 0], [0.06, 0.03, 0.02], [0.10, 0.09, 0.03], [0.11, 0.16, 0.01], [0.10, 0.20, -0.01]], r0: 0.034, r1: 0.009, colorBase: HB, colorTip: HT }],
+  }],
+  coat: {
+    base: hex("#5c3f2a"), mottle: 0.1, mottleScale: 5,
+    rules: [
+      { kind: "dorsal", threshold: 0.6, color: hex("#6b4a30"), soft: 0.3, zones: ["torso"], amount: 0.6 },
+      { kind: "zBand", z0: -0.25, z1: 3.0, color: hex("#2e2018"), soft: 0.25, zones: ["torso"], amount: 0.9 },
+      { kind: "zone", zones: ["neck", "head"], color: hex("#24180f"), amount: 0.95 },
+      { kind: "ventral", threshold: 0.5, color: hex("#3a2a1e"), soft: 0.3, zones: ["torso"] },
+      { kind: "below", y: 0.95, color: hex("#2a1d15"), soft: 0.2, zones: ["leg"] },
+      { kind: "ellipsoid", center: [0, 0.48, 1.40], radii: [0.12, 0.10, 0.10], color: hex("#1a1410"), soft: 0.5, zones: ["head"] },
+    ],
+  },
+  coatFemale: { base: hex("#664630") },
+  organs: [
+    { id: "brain", bone: "head", c: [0, 0.86, 1.27], r: [0.07, 0.06, 0.07], lethal: "vital" },
+    { id: "heart", bone: "chest", c: [0, 0.95, 0.40], r: [0.12, 0.14, 0.13], lethal: "vital" },
+    { id: "lungs", bone: "chest", c: [0, 1.17, 0.25], r: [0.32, 0.30, 0.38], lethal: "vital" },
+    { id: "liver", bone: "spine", c: [0, 1.08, -0.15], r: [0.25, 0.20, 0.18], lethal: "slow" },
+    { id: "stomach", bone: "spine", c: [0, 1.02, -0.50], r: [0.36, 0.33, 0.40], lethal: "none" },
+    { id: "spine", bone: "spine", c: [0, 1.55, -0.30], r: [0.04, 0.05, 1.1], lethal: "vital" },
+  ],
+  vitalRegion: { bone: "chest", c: [0, 1.12, 0.32], r: [0.40, 0.40, 0.44] },
+  gait: { walk: { speed: 1.3, stride: 1.5 }, trot: { speed: 3.5, stride: 2.3 }, gallop: { speed: 14, stride: 5.0 }, flee: 13, swing: 0.30, bob: 0.14 },
+  senses: { sight: 120, hearing: 0.9, smell: 350, wariness: 0.35, herd: [6, 20], group: "herd", fleeDistance: [200, 350] },
+  trophy: { measure: "horn", unit: "pts", maleScore: [100, 135], tiers: { bronze: 108, silver: 116, gold: 124, diamond: 130 }, weightMale: [700, 950], weightFemale: [380, 540] },
+  track: { length: 14, width: 13, shape: "bison", dewclaws: false, stride: 0.9, straddle: 0.40, dropping: { kind: "pat", size: 25 } },
+  facts: {
+    latin: "Bison bison", family: "Bovidae (cattle, sheep, goats)", range: "North American Great Plains, Yellowstone and parks/ranches across the continent",
+    habitat: "Open grassland, river valleys and sagebrush plains", diet: "Grazer — grasses and sedges",
+    lifespan: "15–20 years", topSpeed: "≈ 55–65 km/h; can jump nearly 2 m", shoulder: "1.5–2.0 m at the hump",
+    weight: "Bulls 700–900 kg (over 1,000 kg recorded) · cows 400–550 kg", senses: "Strong sense of smell and good hearing; moderate eyesight",
+    season: "Grazes through the day with rest-and-chew breaks; summer rut with roaring bulls", call: "Bull bellow · grunts",
+    notes: [
+      "The largest land mammal in North America. The hump is muscle over long spines — it powers the huge head used like a snowplough in winter.",
+      "Bison roll in dust 'wallows' to shed fur and deter insects; wallows are strong sign.",
+      "A raised tail is a warning — a bison can turn and charge in an instant.",
+    ],
+  },
+  callName: "Bison grunt call",
+};

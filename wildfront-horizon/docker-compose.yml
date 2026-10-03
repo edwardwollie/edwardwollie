@@ -1,0 +1,20 @@
+services:
+  wildfront-horizon:
+    build: .
+    container_name: wildfront-horizon
+    restart: unless-stopped
+    init: true
+    ports:
+      - "${WILDFRONT_PORT:-8096}:3000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /game/.wrangler:size=16m,mode=0755
+    healthcheck:
+      test: ["CMD","wget","-qO-","http://127.0.0.1:3000/healthz"]
+      interval: 10s
+      timeout: 4s
+      retries: 6
+      start_period: 15s

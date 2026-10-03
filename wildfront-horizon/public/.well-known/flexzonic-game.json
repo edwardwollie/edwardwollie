@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "wildfront-horizon",
+  "slug": "wildfront-horizon",
+  "title": "Wildfront Horizon",
+  "name": "Wildfront Horizon",
+  "shortTitle": "Wildfront",
+  "description": "A full 3D hunting experience built from engineering blueprints: track living wildlife across five reserves with wind and scent, real ballistics and scopes, tracking sign and recovery, graded PERFECT/GREAT/GOOD shots, a trophy lodge and a field guide — twelve progressive contracts plus free hunts.",
+  "category": "Adventure",
+  "tagline": "Track. Stalk. Steady. Respect the wild.",
+  "url": "https://hunt.flexzonicgames.com",
+  "coverImage": "https://hunt.flexzonicgames.com/og.png",
+  "imageUrl": "https://hunt.flexzonicgames.com/og.png",
+  "accentColor": "#53f3dc",
+  "accentColor2": "#ff9c38",
+  "initials": "WH",
+  "featured": true,
+  "order": 40,
+  "version": "3.0.2",
+  "healthPath": "/healthz",
+  "gameplayTypes": [
+    "First Person",
+    "Tracking",
+    "Adventure"
+  ],
+  "subjects": [
+    "Wildlife",
+    "Fieldcraft"
+  ],
+  "controls": [
+    "keyboard",
+    "mouse",
+    "touch"
+  ],
+  "supportsTouch": true,
+  "supportsKeyboard": true
+}

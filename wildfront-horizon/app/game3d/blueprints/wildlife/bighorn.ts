@@ -1,0 +1,137 @@
+import { hex } from "../../core/color.ts";
+import type { AnimalBlueprint } from "../types.ts";
+import { S, T } from "./kit.ts";
+
+// A-05 · Bighorn Sheep ram — reference specimen: full-curl ram, 1.01 m at the shoulder.
+const HB = hex("#a38a66"), HT = hex("#cdb994");
+export const BIGHORN: AnimalBlueprint = {
+  id: "bighorn-sheep", drawing: "A-05", title: "Bighorn Sheep", subtitle: "Ovis canadensis · full-curl ram",
+  category: "wildlife", rev: "C", scale: "1:10",
+  overall: { length: 1.7, width: 0.6, height: 1.4 },
+  notes: [
+    "Compact, deep-bodied climber with a thick neck; white rump patch, muzzle and leg backs.",
+    "Horn: a ridged log-spiral swept back, down and forward around the ear — 'full curl' at ≈ 8 years.",
+    "Horn cross-section flattened (0.8) with annual growth rings (ridges) every ≈ 7 cm.",
+  ],
+  species: "Bighorn Sheep", maleName: "Ram", femaleName: "Ewe", femaleScale: 0.82, femaleHasHeadgear: true,
+  bones: [
+    { name: "root", parent: null, p: [0, 0, 0] },
+    { name: "hips", parent: "root", p: [0, 0.86, -0.42] },
+    { name: "spine", parent: "hips", p: [0, 0.84, -0.08] },
+    { name: "chest", parent: "spine", p: [0, 0.84, 0.22] },
+    { name: "neck1", parent: "chest", p: [0, 0.88, 0.42] },
+    { name: "neck2", parent: "neck1", p: [0, 1.02, 0.56] },
+    { name: "head", parent: "neck2", p: [0, 1.20, 0.72] },
+    { name: "earL", parent: "head", p: [0.07, 1.265, 0.77] },
+    { name: "earR", parent: "head", p: [-0.07, 1.265, 0.77] },
+    { name: "tail1", parent: "hips", p: [0, 0.90, -0.64] },
+    { name: "tail2", parent: "tail1", p: [0, 0.85, -0.68] },
+  ],
+  body: [
+    T(-0.665, 0.90, 0.83, 0.03, -0.55, "hips"),
+    T(-0.62, 0.95, 0.74, 0.12, -0.4, "hips"),
+    T(-0.54, 0.99, 0.66, 0.18, -0.25, "hips"),
+    T(-0.40, 1.0, 0.59, 0.21, -0.06, "hips"),
+    T(-0.20, 0.99, 0.53, 0.235, -0.01, "spine"),
+    T(0.02, 0.99, 0.50, 0.24, 0, "spine"),
+    T(0.22, 1.01, 0.51, 0.22, 0.02, "chest"),
+    T(0.36, 1.01, 0.55, 0.18, 0.08, "chest"),
+    S(0.46, 0.86, 0.20, 0.20, 0.15, 0.50, "neck1", "neck"),
+    S(0.55, 0.97, 0.155, 0.165, 0.125, 0.70, "neck1", "neck"),
+    S(0.63, 1.07, 0.125, 0.135, 0.105, 0.72, "neck2", "neck"),
+    S(0.69, 1.15, 0.105, 0.11, 0.09, 0.55, "neck2", "neck"),
+    S(0.74, 1.21, 0.09, 0.09, 0.085, 0.10, "head", "head"),
+    S(0.80, 1.235, 0.085, 0.085, 0.085, -0.35, "head", "head"),
+    S(0.86, 1.205, 0.07, 0.072, 0.07, -0.60, "head", "head"),
+    S(0.92, 1.16, 0.055, 0.058, 0.055, -0.75, "head", "head"),
+    S(0.965, 1.12, 0.045, 0.048, 0.045, -0.80, "head", "head"),
+    S(0.99, 1.095, 0.036, 0.04, 0.038, -0.80, "head", "head"),
+    S(1.0, 1.085, 0.01, 0.01, 0.01, -0.80, "head", "head"),
+  ],
+  tail: {
+    keys: [
+      S(-0.645, 0.905, 0.025, 0.025, 0.035, -1.0, "tail1", "tail"),
+      S(-0.675, 0.87, 0.026, 0.024, 0.036, -1.2, "tail1", "tail"),
+      S(-0.69, 0.82, 0.02, 0.02, 0.03, -1.4, "tail2", "tail"),
+      S(-0.695, 0.795, 0.006, 0.006, 0.008, -1.5, "tail2", "tail"),
+    ],
+    color: hex("#4a3a2e"), tip: hex("#2c221c"),
+  },
+  legs: [
+    {
+      id: "F", parent: "chest", bones: ["humerus", "radius", "metacarpus", "pastern"],
+      joints: [
+        { p: [0.08, 0.72, 0.32], r: 0.085, rz: 0.07 },
+        { p: [0.13, 0.54, 0.21], r: 0.075, rz: 0.06 },
+        { p: [0.125, 0.30, 0.23], r: 0.04, rz: 0.035 },
+        { p: [0.125, 0.10, 0.24], r: 0.034, rz: 0.03 },
+        { p: [0.125, 0.045, 0.27], r: 0.03, rz: 0.028 },
+      ],
+      hoof: { len: 0.08, w: 0.06, h: 0.045, split: true, dewclaw: true, color: hex("#2a2622") },
+    },
+    {
+      id: "H", parent: "hips", bones: ["femur", "tibia", "metatarsus", "pastern_h"],
+      joints: [
+        { p: [0.08, 0.80, -0.42], r: 0.12, rz: 0.10 },
+        { p: [0.13, 0.57, -0.30], r: 0.10, rz: 0.08 },
+        { p: [0.12, 0.38, -0.52], r: 0.045, rz: 0.036 },
+        { p: [0.12, 0.10, -0.48], r: 0.034, rz: 0.03 },
+        { p: [0.12, 0.045, -0.45], r: 0.03, rz: 0.028 },
+      ],
+      hoof: { len: 0.078, w: 0.058, h: 0.045, split: true, dewclaw: true, color: hex("#2a2622") },
+    },
+  ],
+  ears: { base: [0.07, 1.26, 0.77], dir: [0.85, 0.3, -0.4], len: 0.10, wid: 0.06, cup: 0.015, outer: hex("#6e5a46"), inner: hex("#c9bba6"), tip: hex("#4a3c30") },
+  eyes: { p: [0.08, 1.24, 0.81], r: 0.017 },
+  nose: { p: [0, 1.09, 1.0], r: [0.035, 0.03, 0.02], color: hex("#2a2420") },
+  headgear: [{
+    kind: "horn", bone: "head", base: [0.045, 1.30, 0.78], splay: 0.15, rake: 0,
+    tubes: [{
+      pts: [[0, 0, 0], [0.03, 0.08, -0.06], [0.07, 0.12, -0.16], [0.12, 0.10, -0.25], [0.16, 0.02, -0.29], [0.19, -0.08, -0.26], [0.20, -0.16, -0.17], [0.19, -0.19, -0.06], [0.17, -0.15, 0.04], [0.15, -0.08, 0.09]],
+      r0: 0.065, r1: 0.022, ridge: 0.05, ridgeFreq: 14, flat: 0.8, colorBase: HB, colorTip: HT,
+    }],
+  }],
+  headgearFemale: [{
+    kind: "horn", bone: "head", base: [0.04, 1.29, 0.78], splay: 0.12, rake: 0,
+    tubes: [{ pts: [[0, 0, 0], [0.02, 0.07, -0.04], [0.04, 0.11, -0.10], [0.06, 0.12, -0.16]], r0: 0.025, r1: 0.006, ridge: 0.04, ridgeFreq: 6, flat: 0.8, colorBase: hex("#9a8462"), colorTip: hex("#c4b08c") }],
+  }],
+  coat: {
+    base: hex("#7a6650"), mottle: 0.06, mottleScale: 5,
+    rules: [
+      { kind: "dorsal", threshold: 0.55, color: hex("#5e4e3e"), soft: 0.3, zones: ["torso", "neck"] },
+      { kind: "ventral", threshold: 0.4, color: hex("#dcd4c4"), soft: 0.25, zones: ["torso"] },
+      { kind: "ellipsoid", center: [0, 0.86, -0.64], radii: [0.15, 0.18, 0.12], color: hex("#ece6da"), soft: 0.3 },
+      { kind: "ellipsoid", center: [0, 1.11, 0.95], radii: [0.06, 0.05, 0.07], color: hex("#e6e0d4"), soft: 0.45, zones: ["head"] },
+      { kind: "ellipsoid", center: [0.08, 1.24, 0.81], radii: [0.025, 0.022, 0.025], color: hex("#d8cdb8"), soft: 0.6, mirror: true, zones: ["head"], amount: 0.5 },
+      { kind: "facing", dir: [0, 0, -1], threshold: 0.45, color: hex("#e2dccf"), soft: 0.3, zones: ["leg"] },
+      { kind: "below", y: 0.3, color: hex("#5a4a3a"), soft: 0.1, zones: ["leg"], amount: 0.6 },
+      { kind: "inner", color: hex("#d8cfbf"), amount: 0.7 },
+    ],
+  },
+  organs: [
+    { id: "brain", bone: "head", c: [0, 1.23, 0.78], r: [0.04, 0.035, 0.045], lethal: "vital" },
+    { id: "heart", bone: "chest", c: [0, 0.62, 0.24], r: [0.06, 0.07, 0.065], lethal: "vital" },
+    { id: "lungs", bone: "chest", c: [0, 0.77, 0.15], r: [0.16, 0.16, 0.20], lethal: "vital" },
+    { id: "liver", bone: "spine", c: [0, 0.71, -0.05], r: [0.13, 0.11, 0.10], lethal: "slow" },
+    { id: "stomach", bone: "spine", c: [0, 0.68, -0.22], r: [0.19, 0.18, 0.21], lethal: "none" },
+    { id: "spine", bone: "spine", c: [0, 0.93, -0.10], r: [0.026, 0.026, 0.52], lethal: "vital" },
+  ],
+  vitalRegion: { bone: "chest", c: [0, 0.75, 0.19], r: [0.21, 0.23, 0.24] },
+  gait: { walk: { speed: 1.0, stride: 0.95 }, trot: { speed: 2.6, stride: 1.4 }, gallop: { speed: 11, stride: 3.4 }, flee: 10.5, swing: 0.36, bob: 0.10 },
+  senses: { sight: 260, hearing: 0.9, smell: 200, wariness: 0.6, herd: [3, 10], group: "band", fleeDistance: [160, 300] },
+  trophy: { measure: "horn", unit: "pts", maleScore: [140, 200], tiers: { bronze: 150, silver: 165, gold: 180, diamond: 192 }, weightMale: [75, 140], weightFemale: [50, 85] },
+  track: { length: 8.0, width: 6.0, shape: "blocky", dewclaws: false, stride: 0.5, straddle: 0.17, dropping: { kind: "pellets", size: 1.3 } },
+  facts: {
+    latin: "Ovis canadensis", family: "Bovidae (cattle, sheep, goats)", range: "Rocky Mountains and desert ranges of western North America",
+    habitat: "Steep rocky slopes, cliffs and alpine meadows close to escape terrain", diet: "Grasses, sedges and forbs; shrubs in winter",
+    lifespan: "10–14 years", topSpeed: "≈ 50 km/h; climbs ledges 5 cm wide", shoulder: "0.9–1.05 m",
+    weight: "Rams 58–143 kg · ewes 34–91 kg", senses: "Exceptional eyesight — spots movement over a kilometre away",
+    season: "Day-active; feeds morning and evening, rests on ledges at midday", call: "Bleat · rams' horn clashes in the autumn rut",
+    notes: [
+      "A ram's horns can weigh 14 kg — more than all the bones in its body together.",
+      "Rams settle rank by charging at 30 km/h and clashing horns; a double-layered skull absorbs the blow.",
+      "Count the annual rings on a horn to age a ram, just like the rings of a tree.",
+    ],
+  },
+  callName: "Sheep bleat call",
+};
