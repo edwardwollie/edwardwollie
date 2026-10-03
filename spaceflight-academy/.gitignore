@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env*
+*.zip
+*.tsbuildinfo
+e2e-shots/
+blueprint-out/
+blueprint-out-index.json

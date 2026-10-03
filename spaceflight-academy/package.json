@@ -1,0 +1,38 @@
+{
+  "name": "spaceflight-academy",
+  "version": "3.0.2",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "start": "node server.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests",
+    "test": "npm run build && node --experimental-strip-types --test tests/*.test.mjs",
+    "e2e": "node tools/qa/e2e.mjs e2e-shots",
+    "blueprints": "node tools/blueprint-book/render.mjs blueprint-out --singles"
+  },
+  "dependencies": {
+    "@fontsource-variable/fredoka": "5.3.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.4",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@types/three": "0.186.0",
+    "@vitejs/plugin-react": "6.0.2",
+    "eslint": "9.39.4",
+    "globals": "16.5.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.53.1",
+    "vite": "8.0.13"
+  }
+}

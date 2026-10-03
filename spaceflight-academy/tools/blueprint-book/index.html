@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Spaceflight Academy · Blueprint Book</title>
+<style>
+  html, body { margin: 0; background: #06142f; overflow: hidden; }
+  #sheet { position: relative; overflow: hidden; color: #f4f8ff; font-family: "Fredoka Variable", "Fredoka", system-ui, sans-serif;
+    background-color: #0d3b8e;
+    background-image:
+      linear-gradient(rgba(70, 130, 230, .55) 1.5px, transparent 1.5px),
+      linear-gradient(90deg, rgba(70, 130, 230, .55) 1.5px, transparent 1.5px),
+      linear-gradient(rgba(52, 104, 205, .45) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(52, 104, 205, .45) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px; }
+  #sheet.plain { background-image: none; }
+  #bg { position: absolute; inset: 0; z-index: 0; }
+  #gl { position: absolute; inset: 0; z-index: 1; }
+  #svg { position: absolute; inset: 0; z-index: 2; overflow: visible; }
+  #html { position: absolute; inset: 0; z-index: 3; }
+  .box-c { position: absolute; box-sizing: border-box; }
+  .box { position: absolute; background: rgba(9, 40, 104, .93); border: 2px solid #dfeaff; }
+  .box.clear { background: transparent; }
+  .frame { position: absolute; inset: 22px; border: 3px solid #f4f8ff; pointer-events: none; z-index: 4; }
+  .frame::after { content: ""; position: absolute; inset: 9px; border: 1.2px solid rgba(244, 248, 255, .75); }
+  .zone { position: absolute; font-size: 15px; color: rgba(244, 248, 255, .7); z-index: 4; font-weight: 600; }
+  .kicker { font-size: 20px; letter-spacing: .22em; font-weight: 700; color: #7fe9ff; text-transform: uppercase; }
+  h1 { margin: 0; font-size: 56px; line-height: 1; font-weight: 700; letter-spacing: .01em; }
+  h2 { margin: 0 0 10px; font-size: 26px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #ffe27a; }
+  h3 { margin: 0 0 6px; font-size: 22px; font-weight: 700; }
+  p { margin: 0 0 10px; font-size: 19px; line-height: 1.35; }
+  ul { margin: 0; padding-left: 22px; font-size: 18px; line-height: 1.38; }
+  li { margin-bottom: 4px; }
+  table { border-collapse: collapse; width: 100%; font-size: 17px; }
+  th, td { border: 1.4px solid rgba(223, 234, 255, .75); padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: rgba(223, 234, 255, .14); font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: #bfe9ff; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  .tb { position: absolute; display: grid; border: 3px solid #f4f8ff; background: rgba(9, 40, 104, .96); }
+  .tb > div { border: 1.4px solid rgba(223, 234, 255, .8); padding: 6px 10px; overflow: hidden; }
+  .tb small { display: block; font-size: 12px; letter-spacing: .16em; color: #9fdcff; font-weight: 700; }
+  .tb b { font-size: 21px; font-weight: 700; }
+  .label { position: absolute; transform: translateX(-50%); font-size: 19px; font-weight: 700; letter-spacing: .14em; white-space: nowrap; }
+  .label small { display: block; text-align: center; font-size: 13px; letter-spacing: .1em; color: #bfe9ff; font-weight: 600; }
+  .tag { position: absolute; font-size: 17px; font-weight: 700; white-space: nowrap; padding: 2px 8px; border-radius: 8px; background: rgba(9, 40, 104, .9); border: 1.4px solid #dfeaff; }
+  .chip { display: inline-block; padding: 3px 10px; border-radius: 999px; border: 1.4px solid #dfeaff; font-size: 15px; margin: 0 4px 4px 0; }
+  .caption { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 18px; background: rgba(6, 22, 70, .92); border-top: 2px solid #dfeaff; font-size: 22px; font-weight: 700; display: flex; gap: 14px; align-items: baseline; z-index: 5; }
+  .caption small { font-size: 16px; color: #bfe9ff; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div id="sheet"><div id="bg"></div><canvas id="gl"></canvas><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg><div id="html"></div></div>
+  <script type="module" src="./book.ts"></script>
+</body>
+</html>

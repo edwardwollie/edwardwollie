@@ -1,0 +1,13 @@
+:root{--lime:#ffd95a;--cyan:#62e8ff;--violet:#d579ff;color:#f7fbff}
+body{background:radial-gradient(circle at 15% 8%,#1a3775 0,transparent 31%),radial-gradient(circle at 85% 74%,#4b235d 0,transparent 34%),#04071a}
+@keyframes rocketLaunch{0%{transform:translate(-50%,0) scale(1)}100%{transform:translate(-50%,-390px) scale(.55)}}
+@keyframes flamePulse{50%{transform:scaleY(1.35);filter:brightness(1.4)}}
+.space-scene{background:radial-gradient(circle at 75% 25%,#29336a,transparent 28%),linear-gradient(#050827 0 62%,#25337a 63%,#f58b5c 68%,#121731 69%)!important;overflow:hidden}
+.stars{position:absolute;inset:8% 5%;font-size:2rem;letter-spacing:1.7rem;color:#c5ecff;opacity:.7}
+.planet-horizon{position:absolute;right:5%;bottom:12%;font-size:7rem;filter:drop-shadow(0 0 25px var(--zone))}
+.orbit-path{position:absolute;right:-6%;bottom:-28%;width:60%;height:83%;border:2px solid #62e8ff66;border-radius:50%;transform:rotate(-14deg)}
+.rocket-stack{position:absolute;left:40%;bottom:9%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:3;filter:drop-shadow(0 0 20px #62e8ff55)}
+.space-scene.launching .rocket-stack{animation:rocketLaunch 1.8s cubic-bezier(.32,.02,.66,.97) forwards}
+.nose{font-size:2.2rem;color:#eaf6ff;line-height:.75;text-shadow:0 0 8px #62e8ff}.rocket-part{width:64px;height:36px;display:grid;place-items:center;background:linear-gradient(90deg,#cbd9e8,#fff,#aab8d6);border:2px solid #62e8ff;border-radius:8px;color:#081029;font-size:1.3rem;margin-top:-1px}.empty-rocket{padding:18px 10px;text-align:center;background:#151d48;border:2px dashed #62e8ff;border-radius:8px;font-size:.55rem;letter-spacing:.12em}.flame{font-size:2rem;animation:flamePulse .35s ease-in-out infinite}.telemetry{position:absolute;left:4%;top:8%;max-width:225px;padding:12px 14px;background:#080d2bd9;border-left:3px solid var(--zone);border-radius:10px}.telemetry small,.telemetry b{display:block}.telemetry small{font-size:.55rem;color:#94b8d8;letter-spacing:.14em}.telemetry b{font-size:.76rem;margin-top:4px}.space-hero .planet{filter:drop-shadow(0 0 50px #62e8ff66)}.launch-button{background:linear-gradient(100deg,#ff934d,#ffd95a)!important}
+@media(max-width:600px){.stars{letter-spacing:.7rem}.planet-horizon{font-size:4.5rem}.rocket-stack{left:45%}.rocket-part{width:48px;height:28px}.telemetry{max-width:160px}.telemetry b{font-size:.62rem}}
+

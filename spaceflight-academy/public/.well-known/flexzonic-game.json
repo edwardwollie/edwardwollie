@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "spaceflight-academy",
+  "slug": "spaceflight-academy",
+  "title": "Spaceflight Academy",
+  "name": "Spaceflight Academy",
+  "shortTitle": "Spaceflight",
+  "category": "Educational",
+  "tagline": "Listen. Think. Fly the gates. Build for orbit.",
+  "description": "A full 3D space academy for ages 5–12: walk the Spaceport, fly 3D Space Rush learning gates where every question and all three answers are read aloud before the timer, engineer real-physics rockets from blueprints, launch, and finish each mission with an orbit, docking, landing, sample or photo challenge. Includes a live Solar System observatory and the Classic 2D edition at /classic/.",
+  "url": "https://spaceflight.flexzonicgames.com",
+  "coverImage": "https://spaceflight.flexzonicgames.com/og.png",
+  "imageUrl": "https://spaceflight.flexzonicgames.com/og.png",
+  "accentColor": "#62e8ff",
+  "accentColor2": "#ff66bf",
+  "ageRange": "5–12",
+  "featured": true,
+  "order": 38,
+  "version": "3.0.2",
+  "healthPath": "/healthz",
+  "supportsTouch": true,
+  "supportsKeyboard": true,
+  "offlineReady": true,
+  "features": [
+    "3D Spaceport hub",
+    "Read-aloud learning gates",
+    "Real-physics rocket engineering",
+    "6 destination activities",
+    "Solar System observatory",
+    "Classic 2D edition"
+  ]
+}
