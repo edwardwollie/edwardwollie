@@ -138,4 +138,4 @@ If the automatic rollback already ran, the old folder is already restored; do no
 
 ## Blueprint files
 
-Inside `blueprints/`, open `Cyber-Ninja-3D-Blueprint-Atlas-v4.1.1.pdf` for six plates: six orthographic sides with dimensions, four quarter views, a detail review, the joint map and pose sheet, City Ops assets, and the survival hazards. The PNGs are in `blueprints/renders/`; exact neutral-pose operative, drone and beacon GLBs are in `blueprints/models/`. To regenerate everything, follow `blueprints/README.md`.
+Inside `blueprints/`, open `Cyber-Ninja-3D-Blueprint-Atlas-v4.1.0.pdf` for six plates: six orthographic sides with dimensions, four quarter views, a detail review, the joint map and pose sheet, City Ops assets, and the survival hazards. The PNGs are in `blueprints/renders/`; exact neutral-pose operative, drone and beacon GLBs are in `blueprints/models/`. To regenerate everything, follow `blueprints/README.md`.
